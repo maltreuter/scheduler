@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include "Process.h"
+
 using namespace std;
 
 int main(int argc, char **argv) {
@@ -26,5 +28,7 @@ int main(int argc, char **argv) {
 		cout << "Running RTS with input file: " << input_file << endl;
 	}
 
+	Process p(1, 2, 3, 4, 5, 6);
+	cout << p.pid << endl;
 
 }
