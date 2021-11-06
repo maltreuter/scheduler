@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Assignment PDF and input files
+*.pdf
+500k
