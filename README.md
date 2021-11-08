@@ -10,11 +10,11 @@ make clean
 ```
 
 ## To Do
-[ ] - Menu
-[ ] - Multi level feedback queue
-[ ] - Real time
-[ ] - Statistics
-[ ] - GUI (menu, simulation, gannt charts)
+- [ ] Menu
+- [ ] Multi level feedback queue
+- [ ] Real time
+- [ ] Statistics
+- [ ] GUI (menu, simulation, gannt charts)
 
 
 
