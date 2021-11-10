@@ -1,10 +1,10 @@
 CC	   = g++
 FLAGS  = -Wall -std=c++14
 
-all: scheduler
+all: menu
 
-scheduler: scheduler.cpp
-	$(CC) scheduler.cpp $(FLAGS) -o scheduler
+menu: menu.cpp
+	$(CC) menu.cpp $(FLAGS) -o menu
 
 clean:
-	rm scheduler
+	rm menu
