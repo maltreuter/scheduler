@@ -16,10 +16,23 @@ vector<Process> get_processes(string input_file) {
 	getline(infile, first_line);
 
 	while(infile >> pid >> burst >> arrival >> priority >> deadline >> io) {
-		processes.push_back(Process(pid, burst, arrival, priority, deadline, io));
+		if(pid < 0 || burst < 0 || arrival < 0 || priority < 0 || deadline < 0 || io < 0 || deadline < arrival) {
+			continue;
+		} else {
+			processes.push_back(Process(pid, burst, arrival, priority, deadline, io));
+		}
+
 	}
 
 	return processes;
+}
+
+bool sort_mfqs(Process x, Process y) {
+	if(x.arrival == y.arrival) {
+		return x.priority > y.priority;
+	} else {
+		return x.arrival < y.arrival;
+	}
 }
 
 int main(int argc, char **argv) {
@@ -37,11 +50,11 @@ int main(int argc, char **argv) {
 	cout << "Select an input file: ";
 	cin >> input_file;
 	processes = get_processes(input_file);
+	sort(processes.begin(), processes.end(), sort_mfqs);
 
-	/*
 	for(Process p : processes)
-		cout << "pid = " << p.pid << " arrival = " << p.arrival << endl;
-	*/
+		cout << "pid = " << p.pid << " arrival = " << p.arrival << " priority = " << p.priority << endl;
+
 
 	cout << "Select a scheduler: " << endl;
 	cout << "1. Multi-level Feedback Queue Scheduler" << endl;
@@ -67,6 +80,7 @@ int main(int argc, char **argv) {
 
 		// mfqs constructor
 		mfqs guh = mfqs(n_queues, time_quantum, processes);
+		guh.schedule();
 	} else {
 		// Real Time
 
