@@ -51,12 +51,15 @@ int main(int argc, char **argv) {
 	// Input file or manual entry
 	cout << "Select an input file: ";
 	cin >> input_file;
+
+	// get and sort processes from input file
 	processes = get_processes(input_file);
 	sort(processes.begin(), processes.end(), sort_mfqs);
 
+	/*
 	for(Process p : processes)
 		cout << "pid = " << p.pid << " arrival = " << p.arrival << " priority = " << p.priority << endl;
-
+	*/
 
 	cout << "Select a scheduler: " << endl;
 	cout << "1. Multi-level Feedback Queue Scheduler" << endl;

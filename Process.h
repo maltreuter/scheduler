@@ -27,6 +27,10 @@ class Process {
 		~Process() {
 
 		}
+
+		Process *clone() {
+			return new Process(this->pid, this->burst, this->arrival, this->priority, this->deadline, this->io);
+		}
 };
 
 #endif
