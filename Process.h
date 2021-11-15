@@ -11,6 +11,9 @@ class Process {
 		int priority;
 		int deadline;
 		int io;
+		int start;
+
+		Process() = default;
 
 		Process(int pid, int burst, int arrival, int priority, int deadline, int io) {
 			this->pid = pid;
@@ -19,6 +22,10 @@ class Process {
 			this->priority = priority;
 			this->deadline = deadline;
 			this->io = io;
+		}
+
+		~Process() {
+
 		}
 };
 

@@ -1,8 +1,10 @@
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <vector>
 
 #include "Process.h"
+#include "Queue.h"
 #include "mfqs.h"
 
 using namespace std;
