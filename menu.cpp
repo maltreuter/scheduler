@@ -18,7 +18,7 @@ vector<Process> get_processes(string input_file) {
 	getline(infile, first_line);
 
 	while(infile >> pid >> burst >> arrival >> priority >> deadline >> io) {
-		if(pid < 0 || burst < 0 || arrival < 0 || priority < 0 || deadline < 0 || io < 0 || deadline < arrival) {
+		if(pid < 0 || burst < 0 || arrival < 0 || priority < 0 || deadline < 0 || io < 0 || deadline < arrival || io >= burst) {
 			continue;
 		} else {
 			processes.push_back(Process(pid, burst, arrival, priority, deadline, io));

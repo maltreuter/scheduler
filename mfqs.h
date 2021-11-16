@@ -56,6 +56,7 @@ class mfqs {
 			int n_empty = queues_empty();
 
 			vector<Process> io;
+			int p_io = io_time;
 
 			// stats
 			int ran = 0;
@@ -65,8 +66,8 @@ class mfqs {
 			chrono::milliseconds timespan(5000);
 			this_thread::sleep_for(timespan);
 
-			// while processes or things in queue or cpu occupied
-			while(processes.size() || n_empty >= 0 || occupied) {
+			// while processes or things in queue or cpu occupied or processes still doing io
+			while(processes.size() || n_empty >= 0 || occupied || io.size()) {
 				int i = 0;
 				// cout << "clock: " << clock << " n_empty: " << n_empty << endl;
 
@@ -83,6 +84,18 @@ class mfqs {
 						Process tmp = queues[n_queues - 1].q.front();
 						queues[n_queues - 1].q.pop();
 						queues[0].q.push(tmp);
+					}
+				}
+
+				// Check processes doing io
+				for(i = 0; i < io.size(); i++) {
+					// if 0, io finished, return to queue 0
+					if(io[i].io == 0) {
+						int pid = add_to_queue_n(io[i], 0);
+						io.erase(io.begin() + i);
+					} else {
+						// decrement process io
+						io[i].io--;
 					}
 				}
 
@@ -116,13 +129,22 @@ class mfqs {
 						}
 					} else {
 						running->burst--;
-						// cout << "pid: " << running->pid << " burst: " << running->burst << endl;
-						// cout << "cpu: " << cpu << endl;
+						p_io--;
+
+						// check io time, if 0, add to io queue and reset p_io
+						if(p_io == 0) {
+							io.push_back(*running);
+							occupied = false;
+							p_io = io_time;
+						}
+
+						// check if processes burst is done
 						if(running->burst == 0) {
 							occupied = false;
 							// cout << "finished pid: " << running->pid << endl;
 							ran++;
 						}
+
 						cpu--;
 					}
 				}
