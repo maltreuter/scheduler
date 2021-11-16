@@ -51,7 +51,7 @@ int Mfqs::schedule() {
 
 	// while processes or things in queue or cpu occupied or processes still doing io
 	while(processes.size() || n_empty >= 0 || occupied || io.size()) {
-		int i = 0;
+		size_t i = 0;
 		// cout << "clock: " << clock << " n_empty: " << n_empty << endl;
 
 		// add new processes to first queue
