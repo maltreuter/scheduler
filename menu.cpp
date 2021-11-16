@@ -5,7 +5,7 @@
 
 #include "Process.h"
 #include "Queue.h"
-#include "mfqs.h"
+#include "Mfqs.h"
 
 using namespace std;
 
@@ -18,7 +18,7 @@ vector<Process> get_processes(string input_file) {
 	getline(infile, first_line);
 
 	while(infile >> pid >> burst >> arrival >> priority >> deadline >> io) {
-		if(pid < 0 || burst < 0 || arrival < 0 || priority < 0 || deadline < 0 || io < 0 || deadline < arrival || io >= burst) {
+		if(pid < 0 || burst < 0 || arrival < 0 || priority < 0 || deadline < 0 || io < 0 || deadline < arrival) {
 			continue;
 		} else {
 			processes.push_back(Process(pid, burst, arrival, priority, deadline, io));
@@ -41,7 +41,6 @@ int main(int argc, char **argv) {
 	cout << "Guh Daddy" << endl;
 
 	int scheduler;
-	int io;
 	int n_queues = 0;
 	int time_quantum;
 	int aging_time;
@@ -55,7 +54,6 @@ int main(int argc, char **argv) {
 
 	// get and sort processes from input file
 	processes = get_processes(input_file);
-	sort(processes.begin(), processes.end(), sort_mfqs);
 
 	/*
 	for(Process p : processes)
@@ -67,10 +65,6 @@ int main(int argc, char **argv) {
 	cout << "2. Real-Time Scheduler" << endl;
 	cin >> scheduler;
 
-	// Prompt for I/O timing
-	cout << "How many clock cycles for i/o interrupt? ";
-	cin >> io;
-
 	if(scheduler == 1) {
 		// MFQS
 		cout << "How many queues? ";
@@ -81,13 +75,16 @@ int main(int argc, char **argv) {
 		cin >> time_quantum;
 
 		// Prompt for aging strategy
-		cout << "What is aging time?";
+		cout << "What is aging interval? ";
 		cin >> aging_time;
 
 		cout << "Running MFQS with " << n_queues << " queues and " << time_quantum << " time quantum" << endl;
 
+		// sort processes
+		sort(processes.begin(), processes.end(), sort_mfqs);
+
 		// mfqs constructor
-		mfqs guh = mfqs(n_queues, time_quantum, io, aging_time, processes);
+		Mfqs guh = Mfqs(n_queues, time_quantum, aging_time, processes);
 		guh.schedule();
 	} else {
 		// Real Time
