@@ -44,6 +44,7 @@ int main(int argc, char **argv) {
 	int io;
 	int n_queues = 0;
 	int time_quantum;
+	int aging_time;
 	int hard_real_time;
 	string input_file;
 	vector<Process> processes;
@@ -80,11 +81,13 @@ int main(int argc, char **argv) {
 		cin >> time_quantum;
 
 		// Prompt for aging strategy
+		cout << "What is aging time?";
+		cin >> aging_time;
 
 		cout << "Running MFQS with " << n_queues << " queues and " << time_quantum << " time quantum" << endl;
 
 		// mfqs constructor
-		mfqs guh = mfqs(n_queues, time_quantum, processes);
+		mfqs guh = mfqs(n_queues, time_quantum, io, aging_time, processes);
 		guh.schedule();
 	} else {
 		// Real Time

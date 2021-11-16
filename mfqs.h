@@ -1,6 +1,8 @@
 #ifndef MFQS_H
 #define MFQS_H
 
+#include <chrono>
+#include <thread>
 #include <iostream>
 #include <vector>
 
@@ -12,12 +14,16 @@ class mfqs {
 	public:
 		int n_queues;
 		int time_quantum;
+		int io_time;
+		int aging_time;
 		vector<Process> processes;
 		vector<Queue> queues;
 
-		mfqs(int n_queues, int time_quantum, vector<Process> processes) {
+		mfqs(int n_queues, int time_quantum, int io_time, int aging_time, vector<Process> processes) {
 			this->n_queues = n_queues;
 			this->time_quantum = time_quantum;
+			this->io_time = io_time;
+			this->aging_time = aging_time;
 			this->processes = processes;
 
 			this->queues = vector<Queue>(n_queues);
@@ -49,41 +55,59 @@ class mfqs {
 			Process *running = processes[0].clone();
 			int n_empty = queues_empty();
 
+			vector<Process> io;
+
+			// stats
+			int ran = 0;
+			int pp_size = processes.size();
+
+			cout << "Scheduling " << pp_size << " processes..." << endl;
+			chrono::milliseconds timespan(5000);
+			this_thread::sleep_for(timespan);
+
 			// while processes or things in queue or cpu occupied
 			while(processes.size() || n_empty >= 0 || occupied) {
 				int i = 0;
-				cout << "clock: " << clock << " n_empty: " << n_empty << endl;
+				// cout << "clock: " << clock << " n_empty: " << n_empty << endl;
 
 				// add new processes to first queue
-				// cout << "adding new processes" << endl;
 				while(processes[i].arrival == clock && processes.size()) {
 					int pid = add_to_queue_n(processes[i], 0);
-					cout << "pid added: " << pid << endl;
+					// cout << "pid added: " << pid << endl;
 					processes.erase(processes.begin());
-					//i++;
 				}
 
-				// cout << "finished adding processes" << endl;
+				// Move processes from last queue to first queue at aging interval
+				if(clock % aging_time == 0) {
+					while(!queues[n_queues - 1].q.empty()) {
+						Process tmp = queues[n_queues - 1].q.front();
+						queues[n_queues - 1].q.pop();
+						queues[0].q.push(tmp);
+					}
+				}
 
 				// if no process in cpu, add one
 				if(!occupied) {
 					if(n_empty < 0) {
-						cout << "no process to run, continue" << endl;
+						// cout << "no process to run, continue" << endl;
 					} else {
-						// cout << "occupied is false, add process to cpu" << endl;
-						// cout << "n_empty = " << n_empty << endl;
-						// cout << "size of queues[n_empty] = " << queues[n_empty].q.size() << endl;
 						running = queues[n_empty].q.front().clone();
 						queues[n_empty].q.pop();
-						cpu = queues[n_empty].time_quantum;
+
+						if(queues[n_empty].rr) {
+							cpu = queues[n_empty].time_quantum;
+						} else {
+							cpu = running->burst;
+						}
+
 						occupied = true;
-						cout << "added pid: " << running->pid << " to cpu" << endl;
+						// cout << "added pid: " << running->pid << " to cpu" << endl;
 					}
 				} else {
 					// check if cpu == 0, if not decrement cpu and process burst
 					if(cpu == 0) {
 						occupied = false;
-						if(n_empty + 1 > n_queues) {
+						if(n_empty + 1 == n_queues) {
 							queues[n_empty].q.push(*running);
 							cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty << endl;
 						} else {
@@ -92,11 +116,12 @@ class mfqs {
 						}
 					} else {
 						running->burst--;
-						cout << "pid: " << running->pid << " burst: " << running->burst << endl;
-						cout << "cpu: " << cpu << endl;
+						// cout << "pid: " << running->pid << " burst: " << running->burst << endl;
+						// cout << "cpu: " << cpu << endl;
 						if(running->burst == 0) {
 							occupied = false;
-							cout << "finished pid: " << running->pid << endl;
+							// cout << "finished pid: " << running->pid << endl;
+							ran++;
 						}
 						cpu--;
 					}
@@ -105,6 +130,8 @@ class mfqs {
 				n_empty = queues_empty();
 				clock++;
 			}
+
+			cout << "Scheduled " << ran << " processes out of " << pp_size << " in " << clock << " clock ticks" << endl;
 
 			return 0;
 		}
