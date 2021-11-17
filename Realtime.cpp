@@ -29,7 +29,7 @@ int Realtime::schedule() {
 	while(processes.size() || !run_queue.empty() || occupied) {
 		// processes arrived
 		bool swap = false;
-		if(processes[0].arrival == clock && processes[0].deadline < running->deadline) {
+		if(processes.size() && processes[0].arrival == clock && processes[0].deadline < running->deadline) {
 			swap = true;
 		}
 		while(processes.size() && processes[0].arrival == clock) {
