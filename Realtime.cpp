@@ -29,12 +29,17 @@ int Realtime::schedule() {
 	set<Process, comp> run_queue;
 
 	while(processes.size() || !run_queue.empty() || occupied) {
+		cout << "clock tick" << endl;
 		// processes arrived
 		bool swap = false;
 		if(processes.size() && processes[0].arrival == clock && occupied && processes[0].deadline < running->deadline) {
 			swap = true;
 		}
+
+		cout << "in between" << endl;
+
 		while(processes.size() && processes[0].arrival == clock) {
+			cout << "reading in processes" << endl
 			run_queue.insert(processes[0]);
 			processes.erase(processes.begin());
 		}
@@ -83,6 +88,7 @@ int Realtime::schedule() {
 				occupied = false;
 			} else {
 				running->burst--;
+				cout << "bursting" << endl;
 				if(running->burst == 0) {
 					// process finished burst
 					occupied = false;
