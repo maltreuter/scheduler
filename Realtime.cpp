@@ -50,11 +50,13 @@ int Realtime::schedule() {
 		}
 
 		if(!occupied) {
-			// process running in cpu
-			running = run_queue.front().clone();
-			run_queue.erase(run_queue.begin());
-			occupied = true;
-			cout << "add process to cpu" << endl;
+			if(!run_queue.empty()) {
+				// process running in cpu
+				running = run_queue.front().clone();
+				run_queue.erase(run_queue.begin());
+				occupied = true;
+				cout << "add process to cpu" << endl;
+			}
 		} else {
 			if(running->burst == 0) {
 				// process finished burst
