@@ -63,7 +63,6 @@ int Realtime::schedule() {
 					} else {
 						not_finished++;
 						cout << "process didn't finish before deadline 1" << endl;
-						if(!run_queue.empty()) 
 						run_queue.erase(i);
 						cout << "did it get here?" << endl;
 					}
