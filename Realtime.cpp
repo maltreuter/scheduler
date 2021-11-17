@@ -36,7 +36,7 @@ int Realtime::schedule() {
 		if(arrived) {
 			sort(run_queue.begin(), run_queue.end(), [ ] ( const auto& lhs, const auto& rhs)
 			{
-				return lhs.deadline < rhs.deadline
+				return lhs.deadline < rhs.deadline;
 			});
 
 			if (occupied && running->deadline > run_queue.front().deadline) {
