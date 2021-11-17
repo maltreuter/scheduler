@@ -26,6 +26,7 @@ int Realtime::schedule() {
 		bool arrived = false;
 		// processes arrived
 		if(processes[0].arrival == clock) {
+			cout << "processes arriving" << endl;
 			arrived = true;
 		}
 		while(processes[0].arrival == clock) {
@@ -36,6 +37,7 @@ int Realtime::schedule() {
 		if(arrived) {
 			sort(run_queue.begin(), run_queue.end(), [ ] ( const auto& lhs, const auto& rhs)
 			{
+				cout << "sorting" << endl;
 				return lhs.deadline < rhs.deadline;
 			});
 
@@ -50,6 +52,7 @@ int Realtime::schedule() {
 			running = run_queue.front().clone();
 			run_queue.erase(run_queue.begin());
 			occupied = true;
+			cout << "add process to cpu" << endl;
 		} else {
 			if(running->burst == 0) {
 				// process finished burst
