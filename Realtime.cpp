@@ -31,7 +31,7 @@ int Realtime::schedule() {
 	while(processes.size() || !run_queue.empty() || occupied) {
 		// processes arrived
 		bool swap = false;
-		if(processes.size() && processes[0].arrival == clock && processes[0].deadline < running->deadline) {
+		if(processes.size() && processes[0].arrival == clock && occupied && processes[0].deadline < running->deadline) {
 			swap = true;
 		}
 		while(processes.size() && processes[0].arrival == clock) {
@@ -64,7 +64,6 @@ int Realtime::schedule() {
 						not_finished++;
 						cout << "process didn't finish before deadline 1" << endl;
 						run_queue.erase(i);
-						occupied = false;
 					}
 				}
 				
