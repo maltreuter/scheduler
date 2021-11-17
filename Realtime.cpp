@@ -59,7 +59,7 @@ int Realtime::schedule() {
 				//should we add a process to cpu and decrement burst in one tick?
 			}
 		} else {
-			if(running->deadline == clock) {
+			if(running->deadline <= clock) {
 				//is deadline inclusive?
 				not_finished++;
 				cout << "process didn't finish before deadline" << endl;
