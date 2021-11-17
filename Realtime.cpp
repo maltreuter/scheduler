@@ -51,10 +51,11 @@ int Realtime::schedule() {
 		if(!occupied) {
 			if(!run_queue.empty()) {
 				// process running in cpu
-				for(auto i = run_queue.begin(); i!=run_queue.end(); ++i) {
-					auto p = *i;
-					if(p.deadline > clock) {
-						running = p.clone();
+				for(auto i : run_queue) {
+					cout << "i.deadline: " << i.deadline << endl;
+					cout << "clock: " << clock << endl;
+					if(i.deadline > clock) {
+						running = i.clone();
 						occupied = true;
 						cout << "add new process to cpu" << endl;
 						run_queue.erase(i);
