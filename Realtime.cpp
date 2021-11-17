@@ -64,6 +64,7 @@ int Realtime::schedule() {
 						not_finished++;
 						cout << "process didn't finish before deadline 1" << endl;
 						run_queue.erase(i);
+						occupied = false;
 					}
 				}
 				
