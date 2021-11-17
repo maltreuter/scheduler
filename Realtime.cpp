@@ -66,6 +66,8 @@ int Realtime::schedule() {
 						run_queue.erase(i);
 					}
 				}
+				cout << processes.size() << endl;
+				cout << run_queue.size() << endl;
 				
 				//should we add a process to cpu and decrement burst in one tick?
 			}
