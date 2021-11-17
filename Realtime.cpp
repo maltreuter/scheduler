@@ -62,10 +62,13 @@ int Realtime::schedule() {
 				occupied = false;
 				cout << "process finished" << endl;
 			} else if(running->deadline == clock) {
-				// didnt finish before deadline
-				cout << "process didn't finish before deadline" << endl;
-				occupied = false;
 				not_finished++;
+				cout << "process didn't finish before deadline" << endl;
+				if(hard) {
+					break;
+				}
+				// didnt finish before deadline
+				occupied = false;
 			} else {
 				running->burst--;
 			}
