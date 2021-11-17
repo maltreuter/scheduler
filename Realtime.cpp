@@ -24,14 +24,13 @@ int Realtime::schedule() {
 	Process *running = processes[0].clone();
 
 	while(processes.size() || !run_queue.empty() || occupied) {
-		cout << "got here" << endl;
 		bool arrived = false;
 		// processes arrived
 		if(processes[0].arrival == clock) {
 			cout << "processes arriving" << endl;
 			arrived = true;
 		}
-		while(processes[0].arrival == clock) {
+		while(processes.size() && processes[0].arrival == clock) {
 			run_queue.push_back(processes[0]);
 			processes.erase(processes.begin());
 		}
