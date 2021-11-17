@@ -12,7 +12,7 @@ Realtime::~Realtime() {
 
 }
 
-bool Realtime::sort_deadline(Process x, Process y) {
+bool Realtime::sort_deadline(Process x, Process y) const {
 	return x.deadline < y.deadline;
 }
 
