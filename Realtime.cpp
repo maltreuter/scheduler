@@ -29,17 +29,13 @@ int Realtime::schedule() {
 	set<Process, comp> run_queue;
 
 	while(processes.size() || !run_queue.empty() || occupied) {
-		cout << "clock tick" << endl;
 		// processes arrived
 		bool swap = false;
 		if(processes.size() && processes[0].arrival == clock && occupied && processes[0].deadline < running->deadline) {
 			swap = true;
 		}
 
-		cout << "in between" << endl;
-
 		while(processes.size() && processes[0].arrival == clock) {
-			cout << "reading in processes" << endl
 			run_queue.insert(processes[0]);
 			processes.erase(processes.begin());
 		}
@@ -56,23 +52,25 @@ int Realtime::schedule() {
 		if(!occupied) {
 			if(!run_queue.empty()) {
 				// process running in cpu
-				cout << "run queue not empty" << endl;
-				for(auto i : run_queue) {
-					cout << "i.deadline: " << i.deadline << endl;
-					cout << "clock: " << clock << endl;
-					if(i.deadline > clock) {
-						running = i.clone();
-						occupied = true;
-						cout << "add new process to cpu" << endl;
-						run_queue.erase(i);
-						break;
-					} else {
-						not_finished++;
-						cout << "process didn't finish before deadline 1" << endl;
-						run_queue.erase(i);
-						cout << "did it get here?" << endl;
-					}
-				}
+				auto it = run_queue.begin();
+				auto p = *it;
+				running = p.clone();
+				run_queue.erase(it);
+				occupied = true;
+				// for(auto i : run_queue) {
+				// 	if(i.deadline > clock) {
+				// 		running = i.clone();
+				// 		occupied = true;
+				// 		cout << "add new process to cpu" << endl;
+				// 		run_queue.erase(i);
+				// 		break;
+				// 	} else {
+				// 		not_finished++;
+				// 		cout << "process didn't finish before deadline 1" << endl;
+				// 		run_queue.erase(i); //this is the problem
+				// 		cout << "did it get here?" << endl;
+				// 	}
+				// }
 				
 				//should we add a process to cpu and decrement burst in one tick?
 			}
@@ -88,7 +86,6 @@ int Realtime::schedule() {
 				occupied = false;
 			} else {
 				running->burst--;
-				cout << "bursting" << endl;
 				if(running->burst == 0) {
 					// process finished burst
 					occupied = false;
