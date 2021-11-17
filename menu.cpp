@@ -29,9 +29,17 @@ vector<Process> get_processes(string input_file) {
 	return processes;
 }
 
-bool sort_processes(Process x, Process y) {
+bool sort_mfqs(Process x, Process y) {
 	if(x.arrival == y.arrival) {
 		return x.priority > y.priority;
+	} else {
+		return x.arrival < y.arrival;
+	}
+}
+
+bool sort_rt(Process x, Process y) {
+	if(x.arrival == y.arrival) {
+		return x.deadline < y.deadline;
 	} else {
 		return x.arrival < y.arrival;
 	}
@@ -55,8 +63,6 @@ int main(int argc, char **argv) {
 	// get and sort processes from input file
 	processes = get_processes(input_file);
 
-	// sort processes
-	sort(processes.begin(), processes.end(), sort_processes);
 
 	/*
 	for(Process p : processes)
@@ -69,6 +75,7 @@ int main(int argc, char **argv) {
 	cin >> scheduler;
 
 	if(scheduler == 1) {
+		sort(processes.begin(), processes.end(), sort_mfqs);
 		// MFQS
 		cout << "How many queues? ";
 		cin >> n_queues;
@@ -87,6 +94,7 @@ int main(int argc, char **argv) {
 		Mfqs guh = Mfqs(n_queues, time_quantum, aging_time, processes);
 		guh.schedule();
 	} else {
+		sort(processes.begin(), processes.end(), sort_rt);
 		// Real Time
 
 		// Prompt for hard or soft (giggity)

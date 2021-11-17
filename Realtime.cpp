@@ -1,4 +1,5 @@
 #include "Realtime.h"
+#include <algorithm>
 
 using namespace std;
 
@@ -11,40 +12,59 @@ Realtime::~Realtime() {
 
 }
 
+bool sort_deadline(Process x, Process y) {
+	return x.deadline < y.deadline;
+}
+
 int Realtime::schedule() {
+	int not_finished = 0;
 	int clock = 0;
-	int cpu;
 	bool occupied;
 	Process *running = processes[0].clone();
 
 	while(processes.size() || !run_queue.empty() || occupied) {
+		bool arrived = false;
 		// processes arrived
+		if(processes[0].arrival == clock) {
+			arrived = true;
+		}
 		while(processes[0].arrival == clock) {
-			run_queue.push(processes[0]);
+			run_queue.push_back(processes[0]);
 			processes.erase(processes.begin());
+		}
+
+		if(arrived) {
+			sort(run_queue.begin(), run_queue.end(), sort_deadline);
+			if (occupied && running->deadline > run_queue.front().deadline) {
+				run_queue.push_back(*running);
+				running = run_queue.front().clone();
+			}
 		}
 
 		if(!occupied) {
 			// process running in cpu
 			running = run_queue.front().clone();
-			run_queue.pop();
-			cpu = running->burst;
+			run_queue.erase(run_queue.begin());
 			occupied = true;
 		} else {
-			if(cpu == 0) {
+			if(running->burst == 0) {
 				// process finished burst
 				occupied = false;
-			} else if(running->deadline == 0) {
+				cout << "process finished" << endl;
+			} else if(running->deadline == clock) {
 				// didnt finish before deadline
+				cout << "process didn't finish before deadline" << endl;
 				occupied = false;
+				not_finished++;
 			} else {
-				cpu--;
-				running->deadline--;
+				running->burst--;
 			}
 		}
 
 		clock++;
 	}
+
+	cout << "number of processes not finished: " << not_finished << endl;
 
 	return 0;
 }
