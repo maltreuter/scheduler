@@ -1,5 +1,4 @@
 #include "Realtime.h"
-#include <algorithm>
 
 using namespace std;
 
@@ -12,9 +11,12 @@ Realtime::~Realtime() {
 
 }
 
-// bool Realtime::sort_deadline(Process x, Process y) const {
-// 	return x.deadline < y.deadline;
-// }
+struct comp {
+	template<typename P>
+	bool operator()(const P &l, const P &r) const {
+		return l.deadline < r.deadline;
+	}
+};
 
 int Realtime::schedule() {
 	cout << "scheduling" << endl;
@@ -22,39 +24,37 @@ int Realtime::schedule() {
 	int clock = 0;
 	bool occupied = false;
 	Process *running = processes[0].clone();
+	set<Process, comp> run_queue;
 
 	while(processes.size() || !run_queue.empty() || occupied) {
-		bool arrived = false;
 		// processes arrived
-		if(processes[0].arrival == clock) {
-			cout << "processes arriving" << endl;
-			arrived = true;
+		bool swap = false;
+		if(processes[0].arrival == clock && processes[0].deadline < running->deadline) {
+			swap = true;
 		}
 		while(processes.size() && processes[0].arrival == clock) {
-			run_queue.push_back(processes[0]);
+			run_queue.insert(processes[0]);
 			processes.erase(processes.begin());
 		}
 
-		if(arrived) {
-			cout << "sorting" << endl;
-			sort(run_queue.begin(), run_queue.end(), [ ] ( const auto& lhs, const auto& rhs)
-			{
-				return lhs.deadline < rhs.deadline;
-			});
-
-			if (occupied && running->deadline > run_queue.front().deadline) {
-				run_queue.push_back(*running);
-				running = run_queue.front().clone();
-			}
+		if(swap) {
+			run_queue.insert(*running);
+			auto it = run_queue.begin();
+			auto p = *it;
+			running = p.clone();
+			run_queue.erase(it);
 		}
 
 		if(!occupied) {
 			if(!run_queue.empty()) {
 				// process running in cpu
-				running = run_queue.front().clone();
-				run_queue.erase(run_queue.begin());
+				auto it = run_queue.begin();
+				auto p = *it;
+				running = p.clone();
+				run_queue.erase(it);
+
 				occupied = true;
-				cout << "add process to cpu" << endl;
+				cout << "add new process to cpu" << endl;
 			}
 		} else {
 			if(running->burst == 0) {
