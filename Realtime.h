@@ -13,6 +13,6 @@ class Realtime {
 
 		Realtime(bool hard, vector<Process> processes);
 		~Realtime();
-		static bool sort_deadline(Process x, Process y) const;
+		// bool sort_deadline(Process x, Process y) const;
 		int schedule();
 };

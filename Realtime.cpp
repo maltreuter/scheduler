@@ -12,9 +12,9 @@ Realtime::~Realtime() {
 
 }
 
-static bool Realtime::sort_deadline(Process x, Process y) const {
-	return x.deadline < y.deadline;
-}
+// bool Realtime::sort_deadline(Process x, Process y) const {
+// 	return x.deadline < y.deadline;
+// }
 
 int Realtime::schedule() {
 	int not_finished = 0;
@@ -34,7 +34,11 @@ int Realtime::schedule() {
 		}
 
 		if(arrived) {
-			sort(run_queue.begin(), run_queue.end(), sort_deadline);
+			sort(run_queue.begin(), run_queue.end(), [ ] ( const auto& lhs, const auto& rhs)
+			{
+				return lhs.deadline < rhs.deadline
+			});
+
 			if (occupied && running->deadline > run_queue.front().deadline) {
 				run_queue.push_back(*running);
 				running = run_queue.front().clone();
