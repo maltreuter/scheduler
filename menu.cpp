@@ -6,6 +6,7 @@
 #include "Process.h"
 #include "Queue.h"
 #include "Mfqs.h"
+#include "Realtime.h"
 
 using namespace std;
 
@@ -23,13 +24,12 @@ vector<Process> get_processes(string input_file) {
 		} else {
 			processes.push_back(Process(pid, burst, arrival, priority, deadline, io));
 		}
-
 	}
 
 	return processes;
 }
 
-bool sort_mfqs(Process x, Process y) {
+bool sort_processes(Process x, Process y) {
 	if(x.arrival == y.arrival) {
 		return x.priority > y.priority;
 	} else {
@@ -54,6 +54,9 @@ int main(int argc, char **argv) {
 
 	// get and sort processes from input file
 	processes = get_processes(input_file);
+
+	// sort processes
+	sort(processes.begin(), processes.end(), sort_processes);
 
 	/*
 	for(Process p : processes)
@@ -80,9 +83,6 @@ int main(int argc, char **argv) {
 
 		cout << "Running MFQS with " << n_queues << " queues and " << time_quantum << " time quantum" << endl;
 
-		// sort processes
-		sort(processes.begin(), processes.end(), sort_mfqs);
-
 		// mfqs constructor
 		Mfqs guh = Mfqs(n_queues, time_quantum, aging_time, processes);
 		guh.schedule();
@@ -94,5 +94,9 @@ int main(int argc, char **argv) {
 		cin >> hard_real_time;
 
 		cout << "Running RTS with input file: " << input_file << " and hard/soft: " << hard_real_time << endl;
+
+		// realtime constructor
+		Realtime guh = Realtime(hard_real_time, processes);
+		guh.schedule();
 	}
 }
