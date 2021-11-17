@@ -17,12 +17,14 @@ Realtime::~Realtime() {
 // }
 
 int Realtime::schedule() {
+	cout << "scheduling" << endl;
 	int not_finished = 0;
 	int clock = 0;
-	bool occupied;
+	bool occupied = false;
 	Process *running = processes[0].clone();
 
 	while(processes.size() || !run_queue.empty() || occupied) {
+		cout << "got here" << endl;
 		bool arrived = false;
 		// processes arrived
 		if(processes[0].arrival == clock) {
