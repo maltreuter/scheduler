@@ -20,7 +20,9 @@ struct comp {
 
 int Realtime::schedule() {
 	cout << "scheduling" << endl;
+	int size = processes.size();
 	int not_finished = 0;
+	int finished = 0;
 	int clock = 0;
 	bool occupied = false;
 	Process *running = processes[0].clone();
@@ -49,13 +51,24 @@ int Realtime::schedule() {
 		if(!occupied) {
 			if(!run_queue.empty()) {
 				// process running in cpu
-				auto it = run_queue.begin();
-				auto p = *it;
-				running = p.clone();
-				run_queue.erase(it);
-
-				occupied = true;
-				cout << "add new process to cpu" << endl;
+				for(auto i = run_queue.begin(); i!=run_queue.end(); ++i) {
+					auto p = *i;
+					if(p.deadline > clock) {
+						running = p.clone();
+						occupied = true;
+						cout << "add new process to cpu" << endl;
+						run_queue.erase(i);
+						break;
+					} else {
+						not_finished++;
+						cout << "process didn't finish before deadline" << endl;
+						if(hard) {
+							break;
+						}
+						run_queue.erase(i);
+					}
+				}
+				
 				//should we add a process to cpu and decrement burst in one tick?
 			}
 		} else {
@@ -73,6 +86,7 @@ int Realtime::schedule() {
 				if(running->burst == 0) {
 					// process finished burst
 					occupied = false;
+					finished++;
 					cout << "process finished" << endl;
 				}
 			}
@@ -81,7 +95,10 @@ int Realtime::schedule() {
 		clock++;
 	}
 
+	cout << "number of processes: " << size << endl;
+	cout << "number of processes finished: " << finished << endl;
 	cout << "number of processes not finished: " << not_finished << endl;
+	cout << "finished + not finished: " << finished + not_finished << endl;
 
 	return 0;
 }
