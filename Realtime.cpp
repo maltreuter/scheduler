@@ -62,12 +62,13 @@ int Realtime::schedule() {
 					} else {
 						not_finished++;
 						cout << "process didn't finish before deadline 1" << endl;
-						run_queue.erase(i);
-						cout << "did it get here?" << endl;
+						if(!run_queue.empty()) {
+							run_queue.erase(i);
+							cout << "not empty" << endl;
+						}
+						cout << "empty" << endl;
 					}
 				}
-				cout << processes.size() << endl;
-				cout << run_queue.size() << endl;
 				
 				//should we add a process to cpu and decrement burst in one tick?
 			}
