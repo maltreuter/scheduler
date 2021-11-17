@@ -37,9 +37,9 @@ int Realtime::schedule() {
 		}
 
 		if(arrived) {
+			cout << "sorting" << endl;
 			sort(run_queue.begin(), run_queue.end(), [ ] ( const auto& lhs, const auto& rhs)
 			{
-				cout << "sorting" << endl;
 				return lhs.deadline < rhs.deadline;
 			});
 
