@@ -51,6 +51,7 @@ int Realtime::schedule() {
 		if(!occupied) {
 			if(!run_queue.empty()) {
 				// process running in cpu
+				cout << "run queue not empty" << endl;
 				for(auto i : run_queue) {
 					cout << "i.deadline: " << i.deadline << endl;
 					cout << "clock: " << clock << endl;
