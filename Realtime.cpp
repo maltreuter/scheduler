@@ -51,7 +51,7 @@ int Realtime::schedule() {
 		if(!occupied) {
 			if(!run_queue.empty()) {
 				// process running in cpu
-				for(auto i = run_queue.begin(); i!=run_queue.end(); ++i) {
+				for(auto i = run_queue.begin(); i!=run_queue.end(); i++) {
 					auto p = *i;
 					if(p.deadline > clock) {
 						running = p.clone();
