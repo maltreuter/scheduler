@@ -61,13 +61,10 @@ int Realtime::schedule() {
 						break;
 					} else {
 						not_finished++;
-						auto p = *i;
-						cout << "process didn't finish before deadline 1: " << p.arrival << endl;
-						if(p.arrival > 0) {
-							run_queue.erase(i);
-							cout << "not empty" << endl;
-						}
-						cout << "empty" << endl;
+						cout << "process didn't finish before deadline 1" << endl;
+						if(!run_queue.empty()) 
+						run_queue.erase(i);
+						cout << "did it get here?" << endl;
 					}
 				}
 				
