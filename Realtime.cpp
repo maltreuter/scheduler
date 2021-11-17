@@ -51,7 +51,7 @@ int Realtime::schedule() {
 		if(!occupied) {
 			if(!run_queue.empty()) {
 				// process running in cpu
-				for(auto i = run_queue.begin(); i!=run_queue.end(); i++) {
+				for(auto i = run_queue.begin(); i!=run_queue.end(); ++i) {
 					auto p = *i;
 					if(p.deadline > clock) {
 						running = p.clone();
@@ -61,7 +61,8 @@ int Realtime::schedule() {
 						break;
 					} else {
 						not_finished++;
-						cout << "process didn't finish before deadline 1" << endl;
+						auto p = *i;
+						cout << "process didn't finish before deadline 1: " << p.arrival << endl;
 						if(!run_queue.empty()) {
 							run_queue.erase(i);
 							cout << "not empty" << endl;
