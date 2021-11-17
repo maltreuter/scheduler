@@ -11,90 +11,94 @@ Realtime::~Realtime() {
 
 }
 
-struct comp {
-	template<typename P>
-	bool operator()(const P &l, const P &r) const {
-		return l.deadline < r.deadline;
+int Realtime::find_earliest_deadline(Process *running, int clock, int &not_finished) {
+	int min_deadline = -1;
+	int min_index = -1;
+
+	//loop through process list sorted by arrival time
+	for(size_t i = 0; i < processes.size(); i++) {
+		//if arrival time > clock, stop loop
+		if(processes[i].arrival > clock) {
+			break;
+		}
+		//if clock + burst > deadline, process will never complete, remove it
+		//is this correct or should we still run it even though we know it won't complete?
+		if(clock + processes[i].burst > processes[i].deadline) {
+			cout << "process not finished" << endl;
+			processes.erase(processes.begin() + i);
+			not_finished++;
+			if(hard) {
+				return -2;
+			}
+		} else {
+			//if min_deadline has not been set, or there is a process with an earlier deadline, set new min_deadline
+			if(min_deadline == -1 || processes[i].deadline < min_deadline) {
+				min_deadline = processes[i].deadline;
+				min_index = i;
+			}
+		}
+		i++;
 	}
-};
+
+	return min_index;
+}
 
 int Realtime::schedule() {
-	cout << "scheduling" << endl;
 	int size = processes.size();
+	cout << "scheduling " << size << " processes."  << endl;
 	int not_finished = 0;
 	int finished = 0;
+
 	int clock = 0;
 	bool occupied = false;
 	Process *running = processes[0].clone();
-	set<Process, comp> run_queue;
 
-	while(processes.size() || !run_queue.empty() || occupied) {
-		// processes arrived
-		bool swap = false;
-		if(processes.size() && processes[0].arrival == clock && occupied && processes[0].deadline < running->deadline) {
-			swap = true;
+	while(processes.size() || occupied) {
+		//check this first so that we can put a new process in the cpu this clock tick
+		if(occupied && clock > running->deadline) {
+			not_finished++;
+			cout << "process not finished" << endl;
+			occupied = false;
+			if(hard) {
+				break;
+			}
 		}
 
-		while(processes.size() && processes[0].arrival == clock) {
-			run_queue.insert(processes[0]);
-			processes.erase(processes.begin());
+		int min_index = find_earliest_deadline(running, clock, not_finished);
+
+		if(min_index == -2) {
+			break;
 		}
 
-		if(swap) {
-			cout << "swapping processes" << endl;
-			run_queue.insert(*running);
-			auto it = run_queue.begin();
-			auto p = *it;
-			running = p.clone();
-			run_queue.erase(it);
-		}
-
-		if(!occupied) {
-			if(!run_queue.empty()) {
-				// process running in cpu
-				auto it = run_queue.begin();
-				auto p = *it;
-				running = p.clone();
-				run_queue.erase(it);
+		if(min_index >= 0) {
+			if(!occupied) {
+				//cpu is empty, so put min_index in it
+				cout << "nothing in cpu, adding process" << endl;
+				running = processes[min_index].clone();
+				processes.erase(processes.begin() + min_index);
 				occupied = true;
-				// for(auto i : run_queue) {
-				// 	if(i.deadline > clock) {
-				// 		running = i.clone();
-				// 		occupied = true;
-				// 		cout << "add new process to cpu" << endl;
-				// 		run_queue.erase(i);
-				// 		break;
-				// 	} else {
-				// 		not_finished++;
-				// 		cout << "process didn't finish before deadline 1" << endl;
-				// 		run_queue.erase(i); //this is the problem
-				// 		cout << "did it get here?" << endl;
-				// 	}
-				// }
-				
-				//should we add a process to cpu and decrement burst in one tick?
+			} else {
+				//min_index has earlier deadline, so put it in the cpu
+				if(processes[min_index].deadline < running->deadline) {
+					cout << "swapping processes" << endl;
+					processes.push_back(*running);
+					running = processes[min_index].clone();
+					processes.erase(processes.begin() + min_index);
+				}
 			}
 		} else {
-			if(running->deadline <= clock) {
-				//is deadline inclusive?
-				not_finished++;
-				cout << "process didn't finish before deadline 2" << endl;
-				if(hard) {
-					break;
-				}
-				// didnt finish before deadline
-				occupied = false;
-			} else {
-				running->burst--;
-				if(running->burst == 0) {
-					// process finished burst
-					occupied = false;
-					finished++;
-					cout << "process finished" << endl;
-				}
-			}
+			//nothing has changed, do nothing
 		}
 
+
+		if(occupied) {
+			running->burst--;
+			if(running->burst == 0) {
+				occupied = false;
+				finished++;
+				cout << "pid " << running->pid << " finished" << endl;
+			}
+		}
 		clock++;
 	}
 
@@ -104,4 +108,4 @@ int Realtime::schedule() {
 	cout << "finished + not finished: " << finished + not_finished << endl;
 
 	return 0;
-}
+}		
