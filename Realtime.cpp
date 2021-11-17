@@ -38,6 +38,7 @@ int Realtime::schedule() {
 		}
 
 		if(swap) {
+			cout << "swapping processes" << endl;
 			run_queue.insert(*running);
 			auto it = run_queue.begin();
 			auto p = *it;
@@ -55,13 +56,11 @@ int Realtime::schedule() {
 
 				occupied = true;
 				cout << "add new process to cpu" << endl;
+				//should we add a process to cpu and decrement burst in one tick?
 			}
 		} else {
-			if(running->burst == 0) {
-				// process finished burst
-				occupied = false;
-				cout << "process finished" << endl;
-			} else if(running->deadline == clock) {
+			if(running->deadline == clock) {
+				//is deadline inclusive?
 				not_finished++;
 				cout << "process didn't finish before deadline" << endl;
 				if(hard) {
@@ -71,6 +70,11 @@ int Realtime::schedule() {
 				occupied = false;
 			} else {
 				running->burst--;
+				if(running->burst == 0) {
+					// process finished burst
+					occupied = false;
+					cout << "process finished" << endl;
+				}
 			}
 		}
 
