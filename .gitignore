@@ -34,4 +34,5 @@
 # Assignment PDF and input files
 *.pdf
 500k
+1m_processes
 .vscode/settings.json
