@@ -113,7 +113,9 @@ int Realtime::schedule() {
 	cout << "number of processes not finished: " << not_finished << endl;
 	cout << "ran + not finished: " << ran + not_finished << endl;
 	cout << "avg tt: " << avg_tt << endl;
-	cout << "Average turn around time: " << avg_tt / ran << endl;
+	if(ran > 0) {
+		cout << "Average turn around time: " << avg_tt / ran << endl;
+	}
 	cout << "clock ticks: " << clock << endl;
 
 	return 0;
