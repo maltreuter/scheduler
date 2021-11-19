@@ -27,8 +27,8 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 			}
 		} else {
 			//if min_deadline has not been set, or there is a process with an earlier deadline, set new min_deadline
-			if(min_deadline == -1 || processes[i].deadline < min_deadline) {
-				min_deadline = processes[i].deadline;
+			if(min_deadline == -1 || run_queue[i].deadline < min_deadline) {
+				min_deadline = run_queue[i].deadline;
 				min_index = i;
 			}
 		}
