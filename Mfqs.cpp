@@ -112,6 +112,7 @@ int Mfqs::schedule() {
 					cpu = running->burst;
 				}
 
+				running->burst--;
 				occupied = true;
 				// cout << "added pid: " << running->pid << " to cpu" << endl;
 			}
