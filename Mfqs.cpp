@@ -103,6 +103,7 @@ int Mfqs::schedule() {
 				}
 
 				running->burst--;
+				occupied = true;
 				if(running->burst == 0) {
 					occupied = false;
 
@@ -110,8 +111,6 @@ int Mfqs::schedule() {
 					avg_tt += (clock - running->arrival);
 
 					cout << "finished pid: " << running->pid << endl;
-				} else {
-					occupied = true;
 				}
 				cout << "added pid: " << running->pid << " to cpu" << endl;
 			}
