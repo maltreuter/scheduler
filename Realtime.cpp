@@ -93,11 +93,13 @@ int Realtime::schedule() {
 		//if there's something in the cpu, run it
 		if(occupied) {
 			running->burst--;
-			if(hard && clock == running->deadline) {
+			if(hard && clock == running->deadline && running->burst > 0) {
+				cout << "pid " << running->pid << " not finished; arrival " << running->arrival << "; deadline " << running->deadline << "; burst " << running->burst << "; clock " << clock << endl;
 				not_finished++;
 				break;
 			} else {
 				if(running->burst == 0) {
+					cout << "ran pid " << running->pid << "; arrival " << running->arrival << "; deadline " << running->deadline << "; clock " << clock << endl;
 					occupied = false;
 					ran++;
 					avg_tt += (clock - running->arrival);
