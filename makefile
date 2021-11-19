@@ -1,5 +1,5 @@
 CC	   = g++
-FLAGS  = -Wall -std=c++14
+FLAGS  = -Wall -std=c++14 -O2
 
 all: scheduler
 

@@ -31,9 +31,9 @@ vector<Process> get_processes(string input_file) {
 
 bool sort_mfqs(Process x, Process y) {
 	if(x.arrival == y.arrival) {
-		return x.priority > y.priority;
+		return x.priority < y.priority;
 	} else {
-		return x.arrival < y.arrival;
+		return x.arrival > y.arrival;
 	}
 }
 
@@ -64,10 +64,10 @@ int main(int argc, char **argv) {
 	processes = get_processes(input_file);
 
 
-	/*
-	for(Process p : processes)
-		cout << "pid = " << p.pid << " arrival = " << p.arrival << " priority = " << p.priority << endl;
-	*/
+
+	// for(Process p : processes)
+	// 	cout << "pid = " << p.pid << " arrival = " << p.arrival << " priority = " << p.priority << endl;
+
 
 	cout << "Select a scheduler: " << endl;
 	cout << "1. Multi-level Feedback Queue Scheduler" << endl;
@@ -76,6 +76,9 @@ int main(int argc, char **argv) {
 
 	if(scheduler == 1) {
 		sort(processes.begin(), processes.end(), sort_mfqs);
+		// for(Process p : processes)
+		// 	cout << "pid = " << p.pid << " arrival = " << p.arrival << " priority = " << p.priority << endl;
+
 		// MFQS
 		cout << "How many queues? ";
 		cin >> n_queues;

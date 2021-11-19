@@ -38,7 +38,7 @@ int Mfqs::schedule() {
 	int clock = 0;
 	int cpu;
 	bool occupied = false;
-	Process *running = processes[0].clone();
+	Process *running = processes.back().clone();
 	int n_empty = queues_empty();
 
 	// stats
@@ -64,9 +64,10 @@ int Mfqs::schedule() {
 		// }
 
 		// add new processes to first queue
-		while(processes[0].arrival == clock && processes.size()) {
-			add_to_queue_n(processes[0], 0);
-			processes.erase(processes.begin());
+		while(processes.size() && processes.back().arrival == clock) {
+			Process tmp = processes.back();
+			add_to_queue_n(tmp, 0);
+			processes.pop_back();
 
 			// cout << "pid added: " << pid << endl;
 		}

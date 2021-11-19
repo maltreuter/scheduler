@@ -37,7 +37,6 @@ int Realtime::find_earliest_deadline(Process *running, int clock, int &not_finis
 				min_index = i;
 			}
 		}
-		i++;
 	}
 
 	return min_index;
@@ -108,4 +107,4 @@ int Realtime::schedule() {
 	cout << "finished + not finished: " << finished + not_finished << endl;
 
 	return 0;
-}		
+}
