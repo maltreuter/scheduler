@@ -17,19 +17,23 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 
 	//loop through the run queue
 	for(size_t i = 0; i < run_queue.size(); i++) {
-		//if clock + burst > deadline, process will never complete, remove it
-		if(clock + run_queue[i].burst > run_queue[i].deadline) {
-			// cout << "pid " << run_queue[i].pid << " not finished" << endl;
-			run_queue.erase(run_queue.begin() + i);
-			not_finished++;
-			if(hard) {
-				return -2;
-			}
-		} else {
+		if(hard) {
 			//if min_deadline has not been set, or there is a process with an earlier deadline, set new min_deadline
 			if(min_deadline == -1 || run_queue[i].deadline < min_deadline) {
 				min_deadline = run_queue[i].deadline;
 				min_index = i;
+			}
+		} else {
+			//if clock + burst > deadline, process will never complete, remove it
+			if(clock + run_queue[i].burst > run_queue[i].deadline) {
+				// cout << "pid " << run_queue[i].pid << " not finished" << endl;
+				run_queue.erase(run_queue.begin() + i);
+				not_finished++;
+			} else {
+				if(min_deadline == -1 || run_queue[i].deadline < min_deadline) {
+					min_deadline = run_queue[i].deadline;
+					min_index = i;
+				}
 			}
 		}
 	}
@@ -63,12 +67,7 @@ int Realtime::schedule() {
 
 		//find index of process with earliest deadline
 		int min_index = find_earliest_deadline(clock, not_finished);
-
-		//hard real time and process failed. Exit scheduler
-		if(min_index == -2) {
-			break;
-		}
-
+		
 		//if something has changed
 		if(min_index >= 0) {
 			if(!occupied) {
@@ -94,12 +93,17 @@ int Realtime::schedule() {
 		//if there's something in the cpu, run it
 		if(occupied) {
 			running->burst--;
-			if(running->burst == 0) {
-				occupied = false;
-				ran++;
-				avg_tt += (clock - running->arrival);
+			if(hard && clock == running->deadline) {
+				not_finished++;
+				break;
+			} else {
+				if(running->burst == 0) {
+					occupied = false;
+					ran++;
+					avg_tt += (clock - running->arrival);
 
-				// cout << "pid " << running->pid << " finished" << endl;
+					// cout << "pid " << running->pid << " finished" << endl;
+				}
 			}
 		}
 		clock++;
