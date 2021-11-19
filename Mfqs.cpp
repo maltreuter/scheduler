@@ -44,7 +44,7 @@ int Mfqs::schedule() {
 	// stats
 	int ran = 0;
 	int pp_size = processes.size();
-	long long avg_tt = 0;
+	size_t avg_tt = 0;
 
 	cout << "Scheduling " << pp_size << " processes..." << endl;
 	chrono::milliseconds timespan(2000);
@@ -102,15 +102,22 @@ int Mfqs::schedule() {
 					cpu = running->burst;
 				}
 
-				running->burst--;
-				occupied = true;
-				if(running->burst == 0) {
+				if(running->burst == 1 && running->io > 0) {
 					occupied = false;
+					io.push_back(*running);
 
-					ran++;
-					avg_tt += (clock - running->arrival);
+					// cout << "pid " << running->pid << " added to io list" << endl;
+				} else {
+					running->burst--;
+					occupied = true;
+					if(running->burst == 0) {
+						occupied = false;
 
-					// cout << "finished pid: " << running->pid << endl;
+						ran++;
+						avg_tt += (clock - running->arrival);
+
+						// cout << "finished pid: " << running->pid << endl;
+					}
 				}
 				// cout << "added pid: " << running->pid << " to cpu" << endl;
 			}
@@ -129,23 +136,26 @@ int Mfqs::schedule() {
 				}
 			} else {
 				// cpu running...
-				running->burst--;
 
-				// check if processes burst is done or if its time for io
-				if(running->burst == 0) {
-					occupied = false;
-
-					ran++;
-					avg_tt += (clock - running->arrival);
-
-					// cout << "finished pid: " << running->pid << endl;
-				} else if(running->burst == 1 && running->io > 0) {
+				if(running->burst == 1 && running->io > 0) {
 					occupied = false;
 					io.push_back(*running);
 
 					// cout << "pid " << running->pid << " added to io list" << endl;
-				}
+				} else {
+					running->burst--;
+					
+					if(running->burst == 0) {
+						// check if processes burst is done or if its time for io
+						occupied = false;
 
+						ran++;
+						avg_tt += (clock - running->arrival);
+
+						// cout << "finished pid: " << running->pid << endl;
+					}
+				}
+				
 				cpu--;
 			}
 		}
