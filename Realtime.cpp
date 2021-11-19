@@ -11,16 +11,12 @@ Realtime::~Realtime() {
 
 }
 
-int Realtime::find_earliest_deadline(Process *running, int clock, int &not_finished) {
+int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 	int min_deadline = -1;
 	int min_index = -1;
 
 	//loop through process list sorted by arrival time
 	for(size_t i = 0; i < processes.size(); i++) {
-		//if arrival time > clock, stop loop
-		if(processes[i].arrival > clock) {
-			break;
-		}
 		//if clock + burst > deadline, process will never complete, remove it
 		//is this correct or should we still run it even though we know it won't complete?
 		if(clock + processes[i].burst > processes[i].deadline) {
@@ -36,6 +32,10 @@ int Realtime::find_earliest_deadline(Process *running, int clock, int &not_finis
 				min_deadline = processes[i].deadline;
 				min_index = i;
 			}
+		}
+		//if arrival time > clock, stop loop
+		if(processes[i].arrival == clock) {
+			break;
 		}
 	}
 
@@ -53,17 +53,12 @@ int Realtime::schedule() {
 	Process *running = processes[0].clone();
 
 	while(processes.size() || occupied) {
-		//check this first so that we can put a new process in the cpu this clock tick
-		if(occupied && clock > running->deadline) {
-			not_finished++;
-			cout << "process not finished" << endl;
-			occupied = false;
-			if(hard) {
-				break;
-			}
+		while(processes.size() && processes.back().arrival == clock) {
+			
 		}
 
-		int min_index = find_earliest_deadline(running, clock, not_finished);
+
+		int min_index = find_earliest_deadline(clock, not_finished);
 
 		if(min_index == -2) {
 			break;

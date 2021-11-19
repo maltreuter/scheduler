@@ -65,8 +65,7 @@ int Mfqs::schedule() {
 
 		// add new processes to first queue
 		while(processes.size() && processes.back().arrival == clock) {
-			Process tmp = processes.back();
-			add_to_queue_n(tmp, 0);
+			add_to_queue_n(processes.back(), 0);
 			processes.pop_back();
 
 			// cout << "pid added: " << pid << endl;
@@ -113,7 +112,16 @@ int Mfqs::schedule() {
 				}
 
 				running->burst--;
-				occupied = true;
+				if(running->burst == 0) {
+					occupied = false;
+
+					ran++;
+					avg_tt += (clock - running->arrival);
+
+					// cout << "finished pid: " << running->pid << endl;
+				} else {
+					occupied = true;
+				}
 				// cout << "added pid: " << running->pid << " to cpu" << endl;
 			}
 		} else {
@@ -141,7 +149,7 @@ int Mfqs::schedule() {
 					avg_tt += (clock - running->arrival);
 
 					// cout << "finished pid: " << running->pid << endl;
-				} else if(running->burst == 1) {
+				} else if(running->burst == 1 && running->io > 0) {
 					occupied = false;
 					io.push_back(*running);
 

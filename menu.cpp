@@ -39,9 +39,9 @@ bool sort_mfqs(Process x, Process y) {
 
 bool sort_rt(Process x, Process y) {
 	if(x.arrival == y.arrival) {
-		return x.deadline < y.deadline;
+		return x.deadline > y.deadline;
 	} else {
-		return x.arrival < y.arrival;
+		return x.arrival > y.arrival;
 	}
 }
 
