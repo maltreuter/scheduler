@@ -44,7 +44,7 @@ int Mfqs::schedule() {
 	// stats
 	int ran = 0;
 	int pp_size = processes.size();
-	unsigned int avg_tt = 0;
+	long long avg_tt = 0;
 
 	cout << "Scheduling " << pp_size << " processes..." << endl;
 	chrono::milliseconds timespan(2000);
