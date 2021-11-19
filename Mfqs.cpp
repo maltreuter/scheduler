@@ -44,7 +44,7 @@ int Mfqs::schedule() {
 	// stats
 	int ran = 0;
 	int pp_size = processes.size();
-	int avg_tt = 0;
+	unsigned int avg_tt = 0;
 
 	cout << "Scheduling " << pp_size << " processes..." << endl;
 	chrono::milliseconds timespan(2000);
@@ -79,7 +79,7 @@ int Mfqs::schedule() {
 				int pid = add_to_queue_n(io[i], 0);
 				io.erase(io.begin() + i);
 
-				cout << "io finished for pid: " << pid << endl;
+				// cout << "io finished for pid: " << pid << endl;
 			} else {
 				// decrement process io
 				io[i].io--;
@@ -89,7 +89,7 @@ int Mfqs::schedule() {
 		// if no process in cpu, add one
 		if(!occupied) {
 			if(n_empty < 0) {
-				cout << "no process to run, continue" << endl;
+				// cout << "no process to run, continue" << endl;
 			} else {
 				// get next process in line
 				running = queues[n_empty].q.front().clone();
@@ -110,9 +110,9 @@ int Mfqs::schedule() {
 					ran++;
 					avg_tt += (clock - running->arrival);
 
-					cout << "finished pid: " << running->pid << endl;
+					// cout << "finished pid: " << running->pid << endl;
 				}
-				cout << "added pid: " << running->pid << " to cpu" << endl;
+				// cout << "added pid: " << running->pid << " to cpu" << endl;
 			}
 		} else {
 			// check if time quantum is up, if not, continue running
@@ -121,11 +121,11 @@ int Mfqs::schedule() {
 				if(n_empty + 1 == n_queues) {
 					add_to_queue_n(*running, n_empty);
 
-					cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty << endl;
+					// cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty << endl;
 				} else {
 					add_to_queue_n(*running, n_empty + 1);
 
-					cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty + 1 << endl;
+					// cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty + 1 << endl;
 				}
 			} else {
 				// cpu running...
@@ -138,12 +138,12 @@ int Mfqs::schedule() {
 					ran++;
 					avg_tt += (clock - running->arrival);
 
-					cout << "finished pid: " << running->pid << endl;
+					// cout << "finished pid: " << running->pid << endl;
 				} else if(running->burst == 1 && running->io > 0) {
 					occupied = false;
 					io.push_back(*running);
 
-					cout << "pid " << running->pid << " added to io list" << endl;
+					// cout << "pid " << running->pid << " added to io list" << endl;
 				}
 
 				cpu--;
