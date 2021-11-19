@@ -19,7 +19,7 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 	for(size_t i = 0; i < run_queue.size(); i++) {
 		//if clock + burst > deadline, process will never complete, remove it
 		if(clock + run_queue[i].burst > run_queue[i].deadline) {
-			cout << "pid " << run_queue[i].pid << " not finished" << endl;
+			// cout << "pid " << run_queue[i].pid << " not finished" << endl;
 			run_queue.erase(run_queue.begin() + i);
 			not_finished++;
 			if(hard) {
@@ -42,11 +42,12 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 int Realtime::schedule() {
 	int size = processes.size();
 	int not_finished = 0;
-	int finished = 0;
+	int ran = 0;
 
 	int clock = 0;
 	bool occupied = false;
 	Process *running = processes.back().clone();
+	size_t avg_tt = 0;
 
 	cout << "scheduling " << size << " processes."  << endl;
 	chrono::milliseconds timespan(2000);
@@ -72,7 +73,7 @@ int Realtime::schedule() {
 		if(min_index >= 0) {
 			if(!occupied) {
 				//cpu is empty, so put run_queue[min_index] in it
-				cout << "nothing in cpu, adding process" << endl;
+				// cout << "nothing in cpu, adding process" << endl;
 				running = run_queue[min_index].clone();
 				run_queue.erase(run_queue.begin() + min_index);
 				occupied = true;
@@ -80,7 +81,7 @@ int Realtime::schedule() {
 				//if run_queue[min_index] has earlier deadline, put it in the cpu
 				//if deadlines are equal should we check burst?
 				if(run_queue[min_index].deadline < running->deadline) {
-					cout << "swapping processes" << endl;
+					// cout << "swapping processes" << endl;
 					run_queue.push_back(*running);
 					running = run_queue[min_index].clone();
 					run_queue.erase(run_queue.begin() + min_index);
@@ -93,17 +94,22 @@ int Realtime::schedule() {
 			running->burst--;
 			if(running->burst == 0) {
 				occupied = false;
-				finished++;
-				cout << "pid " << running->pid << " finished" << endl;
+				ran++;
+				avg_tt += (clock - running->arrival);
+
+				// cout << "pid " << running->pid << " finished" << endl;
 			}
 		}
 		clock++;
 	}
 
 	cout << "number of processes: " << size << endl;
-	cout << "number of processes finished: " << finished << endl;
+	cout << "number of processes ran: " << ran << endl;
 	cout << "number of processes not finished: " << not_finished << endl;
-	cout << "finished + not finished: " << finished + not_finished << endl;
+	cout << "ran + not finished: " << ran + not_finished << endl;
+	cout << "avg tt: " << avg_tt << endl;
+	cout << "Average turn around time: " << avg_tt / ran << endl;
+	cout << "clock ticks: " << clock << endl;
 
 	return 0;
 }

@@ -46,7 +46,7 @@ bool sort_rt(Process x, Process y) {
 }
 
 int main(int argc, char **argv) {
-	cout << "Guh Daddy" << endl;
+	cout << "Guh Mommy and Daddy" << endl;
 
 	int scheduler;
 	int n_queues = 0;
