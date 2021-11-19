@@ -74,6 +74,7 @@ int Realtime::schedule() {
 			if(!occupied) {
 				//cpu is empty, so put run_queue[min_index] in it
 				// cout << "nothing in cpu, adding process" << endl;
+				delete running;
 				running = run_queue[min_index].clone();
 				run_queue.erase(run_queue.begin() + min_index);
 				occupied = true;
@@ -83,6 +84,7 @@ int Realtime::schedule() {
 				if(run_queue[min_index].deadline < running->deadline) {
 					// cout << "swapping processes" << endl;
 					run_queue.push_back(*running);
+					delete running;
 					running = run_queue[min_index].clone();
 					run_queue.erase(run_queue.begin() + min_index);
 				}
@@ -102,6 +104,9 @@ int Realtime::schedule() {
 		}
 		clock++;
 	}
+
+	delete running;
+
 
 	cout << "number of processes: " << size << endl;
 	cout << "number of processes ran: " << ran << endl;

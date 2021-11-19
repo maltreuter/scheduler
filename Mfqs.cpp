@@ -97,6 +97,7 @@ int Mfqs::schedule() {
 				// cout << "no process to run, continue" << endl;
 			} else {
 				// get next process in line
+				delete running;
 				running = queues[n_empty].q.front().clone();
 				queues[n_empty].q.pop();
 
@@ -168,6 +169,8 @@ int Mfqs::schedule() {
 		n_empty = queues_empty();
 		clock++;
 	}
+
+	delete running;
 
 	cout << "Scheduled " << ran << " processes out of " << pp_size << " in " << clock << " clock ticks" << endl;
 	cout << "avg tt: " << avg_tt << endl;
