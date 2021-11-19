@@ -32,6 +32,7 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 				min_index = i;
 			}
 		}
+	}
 
 	//either the index of the process in the queue with the earliest deadline
 	//or -1, meaning there is nothing in the queue
