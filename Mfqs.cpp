@@ -36,7 +36,7 @@ int Mfqs::add_to_queue_n(Process p, int n) {
 
 int Mfqs::schedule() {
 	int clock = 0;
-	int cpu;
+	int cpu = -1;
 	bool occupied = false;
 	Process *running = processes.back().clone();
 	int n_empty = queues_empty();
