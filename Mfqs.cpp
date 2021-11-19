@@ -45,6 +45,8 @@ int Mfqs::schedule() {
 	int ran = 0;
 	int pp_size = processes.size();
 	size_t avg_tt = 0;
+	int num_io = 0;
+	int sent_io = 0;
 
 	cout << "Scheduling " << pp_size << " processes..." << endl;
 	chrono::milliseconds timespan(2000);
@@ -56,6 +58,9 @@ int Mfqs::schedule() {
 
 		// add new processes to first queue
 		while(processes.size() && processes.back().arrival == clock) {
+			if(processes.back().io > 0) {
+				num_io++;
+			}
 			add_to_queue_n(processes.back(), 0);
 			processes.pop_back();
 
@@ -105,7 +110,7 @@ int Mfqs::schedule() {
 				if(running->burst == 1 && running->io > 0) {
 					occupied = false;
 					io.push_back(*running);
-
+					sent_io++;
 					// cout << "pid " << running->pid << " added to io list" << endl;
 				} else {
 					running->burst--;
@@ -140,7 +145,7 @@ int Mfqs::schedule() {
 				if(running->burst == 1 && running->io > 0) {
 					occupied = false;
 					io.push_back(*running);
-
+					sent_io++;
 					// cout << "pid " << running->pid << " added to io list" << endl;
 				} else {
 					running->burst--;
