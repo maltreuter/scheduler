@@ -1,3 +1,12 @@
+#ifndef REALTIME_H
+#define REALTIME_H
+
+#ifdef DEBUG
+#define _DEBUG(x) do { std::cerr << #x << ": "<< x << std::endl; } while(0)
+#else
+#define _DEBUG(x)
+#endif
+
 #include "Process.h"
 
 #include <chrono>
@@ -5,7 +14,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <set>
 #include <deque>
 
 using namespace std;
@@ -22,3 +30,4 @@ class Realtime {
 		int schedule();
 };
 
+#endif

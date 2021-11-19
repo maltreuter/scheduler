@@ -1,6 +1,12 @@
 #ifndef MFQS_H
 #define MFQS_H
 
+#ifdef DEBUG
+#define _DEBUG(x) do { std::cerr << #x << ": "<< x << std::endl; } while(0)
+#else
+#define _DEBUG(x)
+#endif
+
 #include <chrono>
 #include <thread>
 #include <iostream>

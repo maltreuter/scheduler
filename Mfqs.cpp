@@ -55,6 +55,7 @@ int Mfqs::schedule() {
 	// while processes or things in queue or cpu occupied or processes still doing io
 	while(processes.size() || n_empty >= 0 || occupied || io.size()) {
 		// cout << "clock: " << clock << " n_empty: " << n_empty << endl;
+		_DEBUG(clock);
 
 		// add new processes to first queue
 		while(processes.size() && processes.back().arrival == clock) {
@@ -150,7 +151,7 @@ int Mfqs::schedule() {
 					// cout << "pid " << running->pid << " added to io list" << endl;
 				} else {
 					running->burst--;
-					
+
 					if(running->burst == 0) {
 						// check if processes burst is done or if its time for io
 						occupied = false;
@@ -161,7 +162,7 @@ int Mfqs::schedule() {
 						// cout << "finished pid: " << running->pid << endl;
 					}
 				}
-				
+
 				cpu--;
 			}
 		}

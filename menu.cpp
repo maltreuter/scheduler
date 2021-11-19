@@ -15,6 +15,8 @@ vector<Process> get_processes(string input_file) {
 	int pid, burst, arrival, priority, deadline, io;
 	ifstream infile(input_file);
 
+	// int total_burst = 0;
+
 	string first_line;
 	getline(infile, first_line);
 
@@ -22,10 +24,12 @@ vector<Process> get_processes(string input_file) {
 		if(pid < 0 || burst <= 0 || arrival < 0 || priority < 0 || deadline <= 0 || io < 0 || deadline < arrival) {
 			continue;
 		} else {
+			// total_burst += burst;
 			processes.push_back(Process(pid, burst, arrival, priority, deadline, io));
 		}
 	}
 
+	// cout << "total burst " << total_burst << endl;
 	return processes;
 }
 
@@ -53,7 +57,9 @@ int main(int argc, char **argv) {
 	int time_quantum;
 	int aging_time;
 	int hard_real_time;
+
 	string input_file;
+
 	vector<Process> processes;
 
 	// Input file or manual entry
@@ -63,11 +69,8 @@ int main(int argc, char **argv) {
 	// get and sort processes from input file
 	processes = get_processes(input_file);
 
-
-
 	// for(Process p : processes)
 	// 	cout << "pid = " << p.pid << " arrival = " << p.arrival << " priority = " << p.priority << endl;
-
 
 	cout << "Select a scheduler: " << endl;
 	cout << "1. Multi-level Feedback Queue Scheduler" << endl;
