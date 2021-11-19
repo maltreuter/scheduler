@@ -172,6 +172,8 @@ int Mfqs::schedule() {
 	cout << "Scheduled " << ran << " processes out of " << pp_size << " in " << clock << " clock ticks" << endl;
 	cout << "avg tt: " << avg_tt << endl;
 	cout << "Average turn around time: " << avg_tt / ran << " clock ticks" << endl;
+	cout << "Processes with io: " << num_io << endl;
+	cout << "Processes that did io: " << sent_io << endl;
 
 	return 0;
 }
