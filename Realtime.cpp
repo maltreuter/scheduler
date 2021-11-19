@@ -15,13 +15,12 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 	int min_deadline = -1;
 	int min_index = -1;
 
-	//loop through process list sorted by arrival time
-	for(size_t i = 0; i < processes.size(); i++) {
+	//loop through the run queue
+	for(size_t i = 0; i < run_queue.size(); i++) {
 		//if clock + burst > deadline, process will never complete, remove it
-		//is this correct or should we still run it even though we know it won't complete?
-		if(clock + processes[i].burst > processes[i].deadline) {
-			cout << "process not finished" << endl;
-			processes.erase(processes.begin() + i);
+		if(clock + run_queue[i].burst > run_queue[i].deadline) {
+			cout << "pid " << run_queue[i].pid << " not finished" << endl;
+			run_queue.erase(run_queue.begin() + i);
 			not_finished++;
 			if(hard) {
 				return -2;
@@ -33,58 +32,62 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 				min_index = i;
 			}
 		}
-		//if arrival time > clock, stop loop
-		if(processes[i].arrival == clock) {
-			break;
-		}
-	}
 
+	//either the index of the process in the queue with the earliest deadline
+	//or -1, meaning there is nothing in the queue
 	return min_index;
 }
 
 int Realtime::schedule() {
 	int size = processes.size();
-	cout << "scheduling " << size << " processes."  << endl;
 	int not_finished = 0;
 	int finished = 0;
 
 	int clock = 0;
 	bool occupied = false;
-	Process *running = processes[0].clone();
+	Process *running = processes.back().clone();
 
-	while(processes.size() || occupied) {
+	cout << "scheduling " << size << " processes."  << endl;
+	chrono::milliseconds timespan(2000);
+	this_thread::sleep_for(timespan);
+
+	//while processes or things in run queue or cpu occupied
+	while(processes.size() || run_queue.size() || occupied) {
+		//add all new processes to the run queue
 		while(processes.size() && processes.back().arrival == clock) {
-			
+			run_queue.push_back(processes.back());
+			processes.pop_back();
 		}
 
-
+		//find index of process with earliest deadline
 		int min_index = find_earliest_deadline(clock, not_finished);
 
+		//hard real time and process failed. Exit scheduler
 		if(min_index == -2) {
 			break;
 		}
 
+		//if something has changed
 		if(min_index >= 0) {
 			if(!occupied) {
-				//cpu is empty, so put min_index in it
+				//cpu is empty, so put run_queue[min_index] in it
 				cout << "nothing in cpu, adding process" << endl;
-				running = processes[min_index].clone();
-				processes.erase(processes.begin() + min_index);
+				running = run_queue[min_index].clone();
+				run_queue.erase(run_queue.begin() + min_index);
 				occupied = true;
 			} else {
-				//min_index has earlier deadline, so put it in the cpu
-				if(processes[min_index].deadline < running->deadline) {
+				//if run_queue[min_index] has earlier deadline, put it in the cpu
+				//if deadlines are equal should we check burst?
+				if(run_queue[min_index].deadline < running->deadline) {
 					cout << "swapping processes" << endl;
-					processes.push_back(*running);
-					running = processes[min_index].clone();
-					processes.erase(processes.begin() + min_index);
+					run_queue.push_back(*running);
+					running = run_queue[min_index].clone();
+					run_queue.erase(run_queue.begin() + min_index);
 				}
 			}
-		} else {
-			//nothing has changed, do nothing
 		}
 
-
+		//if there's something in the cpu, run it
 		if(occupied) {
 			running->burst--;
 			if(running->burst == 0) {
