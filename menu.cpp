@@ -98,6 +98,8 @@ int main(int argc, char **argv) {
 		guh.schedule();
 	} else {
 		sort(processes.begin(), processes.end(), sort_rt);
+		for(Process p : processes)
+			cout << "pid = " << p.pid << " arrival = " << p.arrival << " deadline = " << p.deadline << endl;
 		// Real Time
 
 		// Prompt for hard or soft (giggity)
