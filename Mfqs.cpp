@@ -46,8 +46,6 @@ int Mfqs::schedule() {
 	int pp_size = processes.size();
 	int avg_tt = 0;
 
-	bool stopped = true;
-
 	cout << "Scheduling " << pp_size << " processes..." << endl;
 	chrono::milliseconds timespan(2000);
 	this_thread::sleep_for(timespan);
@@ -55,13 +53,6 @@ int Mfqs::schedule() {
 	// while processes or things in queue or cpu occupied or processes still doing io
 	while(processes.size() || n_empty >= 0 || occupied || io.size()) {
 		// cout << "clock: " << clock << " n_empty: " << n_empty << endl;
-
-		// chrono::milliseconds timespan(10000);
-		// if(stopped && processes.size() == 0) {
-		// 	stopped = false;
-		// 	cout << "clock: " << clock << endl;
-		// 	this_thread::sleep_for(timespan);
-		// }
 
 		// add new processes to first queue
 		while(processes.size() && processes.back().arrival == clock) {
@@ -85,10 +76,10 @@ int Mfqs::schedule() {
 		for(i = 0; i < io.size(); i++) {
 			// if 0, io finished, return to queue 0
 			if(io[i].io == 0) {
-				add_to_queue_n(io[i], 0);
+				int pid = add_to_queue_n(io[i], 0);
 				io.erase(io.begin() + i);
 
-				// cout << "io finished for pid: " << pid << endl;
+				cout << "io finished for pid: " << pid << endl;
 			} else {
 				// decrement process io
 				io[i].io--;
@@ -98,7 +89,7 @@ int Mfqs::schedule() {
 		// if no process in cpu, add one
 		if(!occupied) {
 			if(n_empty < 0) {
-				// cout << "no process to run, continue" << endl;
+				cout << "no process to run, continue" << endl;
 			} else {
 				// get next process in line
 				running = queues[n_empty].q.front().clone();
@@ -118,11 +109,11 @@ int Mfqs::schedule() {
 					ran++;
 					avg_tt += (clock - running->arrival);
 
-					// cout << "finished pid: " << running->pid << endl;
+					cout << "finished pid: " << running->pid << endl;
 				} else {
 					occupied = true;
 				}
-				// cout << "added pid: " << running->pid << " to cpu" << endl;
+				cout << "added pid: " << running->pid << " to cpu" << endl;
 			}
 		} else {
 			// check if time quantum is up, if not, continue running
@@ -131,11 +122,11 @@ int Mfqs::schedule() {
 				if(n_empty + 1 == n_queues) {
 					add_to_queue_n(*running, n_empty);
 
-					// cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty << endl;
+					cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty << endl;
 				} else {
 					add_to_queue_n(*running, n_empty + 1);
 
-					// cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty + 1 << endl;
+					cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty + 1 << endl;
 				}
 			} else {
 				// cpu running...
@@ -148,12 +139,12 @@ int Mfqs::schedule() {
 					ran++;
 					avg_tt += (clock - running->arrival);
 
-					// cout << "finished pid: " << running->pid << endl;
+					cout << "finished pid: " << running->pid << endl;
 				} else if(running->burst == 1 && running->io > 0) {
 					occupied = false;
 					io.push_back(*running);
 
-					// cout << "pid " << running->pid << " added to io list" << endl;
+					cout << "pid " << running->pid << " added to io list" << endl;
 				}
 
 				cpu--;
@@ -165,6 +156,7 @@ int Mfqs::schedule() {
 	}
 
 	cout << "Scheduled " << ran << " processes out of " << pp_size << " in " << clock << " clock ticks" << endl;
+	cout << "avg tt: " << avg_tt << endl;
 	cout << "Average turn around time: " << avg_tt / ran << " clock ticks" << endl;
 
 	return 0;
