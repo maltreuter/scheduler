@@ -76,7 +76,7 @@ int Mfqs::schedule() {
 		for(i = 0; i < io.size(); i++) {
 			// if 0, io finished, return to queue 0
 			if(io[i].io == 0) {
-				int pid = add_to_queue_n(io[i], 0);
+				add_to_queue_n(io[i], 0);
 				io.erase(io.begin() + i);
 
 				// cout << "io finished for pid: " << pid << endl;
