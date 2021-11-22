@@ -24,7 +24,7 @@ public class GanttChart extends JFrame {
     public static void main(String[] args) throws FileNotFoundException {
         ArrayList<Process> process_list = new ArrayList<>();
 
-        File file = new File("../gantt.txt");
+        File file = new File("gantt.txt");
         Scanner scanner = new Scanner(file);
         int clock = 0;
 
