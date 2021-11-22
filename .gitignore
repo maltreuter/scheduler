@@ -36,3 +36,9 @@
 500k
 1m_processes
 .vscode/settings.json
+
+# Intellij Project Files
+*.idea
+*.iml
+*out
+
