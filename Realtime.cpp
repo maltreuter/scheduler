@@ -26,7 +26,7 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 		} else {
 			//if clock + burst > deadline, process will never complete, remove it
 			if(clock + run_queue[i].burst > run_queue[i].deadline) {
-				// cout << "pid " << run_queue[i].pid << " not finished" << endl;
+				_DEBUG2(cout << "pid " << run_queue[i].pid << " not finished" << endl);
 				run_queue.erase(run_queue.begin() + i);
 				not_finished++;
 			} else {
@@ -60,7 +60,7 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 	Process *running = processes.back().clone();
 	size_t avg_tt = 0;
 
-	cout << "scheduling " << size << " processes."  << endl;
+	cout << "Scheduling " << size << " processes."  << endl;
 	chrono::milliseconds timespan(2000);
 	this_thread::sleep_for(timespan);
 
@@ -80,26 +80,24 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 		if(min_index >= 0) {
 			if(!occupied) {
 				//cpu is empty, so put run_queue[min_index] in it
-				// cout << "nothing in cpu, adding process" << endl;
+				_DEBUG2(cout << "nothing in cpu, adding process" << endl);
 				delete running;
 				running = run_queue[min_index].clone();
 				run_queue.erase(run_queue.begin() + min_index);
 				occupied = true;
 
 				//write to gantt file - beginning of process
-				// gantt << running->pid << "," << clock << ",";
 				gantt_p = make_tuple(running->pid, clock, 0);
 			} else {
 				//if run_queue[min_index] has earlier deadline, swap it with what's in the cpu
 				if(run_queue[min_index].deadline < running->deadline) {
-					// cout << "swapping processes" << endl;
+					_DEBUG2(cout << "swapping processes" << endl);
 					run_queue.push_back(*running);
 					delete running;
 					running = run_queue[min_index].clone();
 					run_queue.erase(run_queue.begin() + min_index);
 
 					//write to gantt file - end of process and beginning of new process
-					// gantt << clock << endl << running->pid << "," << clock << ",";
 					get<2>(gantt_p) = clock;
 					gantt_list.push_back(gantt_p);
 					gantt_p = make_tuple(running->pid, clock, 0);
@@ -113,11 +111,10 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 
 			//if process has reached its deadline and has not finished
 			if(hard && clock == running->deadline && running->burst > 0) {
-				cout << "pid " << running->pid << " not finished; arrival " << running->arrival << "; deadline " << running->deadline << "; burst " << running->burst << "; clock " << clock << endl;
+				_DEBUG2(cout << "pid " << running->pid << " not finished; arrival " << running->arrival << "; deadline " << running->deadline << "; burst " << running->burst << "; clock " << clock << endl);
 				not_finished++;
 
 				//write to gantt file - end of process
-				// gantt << clock << endl;
 				get<2>(gantt_p) = clock + 1;
 				gantt_list.push_back(gantt_p);
 
@@ -125,17 +122,16 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 			} else {
 				//process finished
 				if(running->burst == 0) {
-					cout << "ran pid " << running->pid << "; arrival " << running->arrival << "; deadline " << running->deadline << "; clock " << clock << endl;
+					_DEBUG2(cout << "ran pid " << running->pid << "; arrival " << running->arrival << "; deadline " << running->deadline << "; clock " << clock << endl);
 					occupied = false;
 					ran++;
 					avg_tt += (clock - running->arrival);
 
 					//write to gantt file - end of processes
-					// gantt << clock << endl;
 					get<2>(gantt_p) = clock + 1;
 					gantt_list.push_back(gantt_p);
 
-					// cout << "pid " << running->pid << " finished" << endl;
+					_DEBUG2(cout << "pid " << running->pid << " finished" << endl);
 				}
 			}
 		}
@@ -143,8 +139,6 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 	}
 
 	delete running;
-
-	// gantt.close();
 
 
 	cout << "Number of processes: " << size << endl;

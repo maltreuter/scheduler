@@ -34,6 +34,44 @@ int Mfqs::add_to_queue_n(Process p, int n) {
 	return p.pid;
 }
 
+void Mfqs::add_processes(int clock, int &num_io) {
+	while(processes.size() && processes.back().arrival == clock) {
+		if(processes.back().io > 0) {
+			num_io++;
+		}
+		add_to_queue_n(processes.back(), 0);
+		processes.pop_back();
+
+		_DEBUG2(cout << "pid added: " << pid << endl);
+	}
+}
+
+void Mfqs::check_aging(int clock) {
+	if(clock % aging_time == 0) {
+		while(!queues[n_queues - 1].q.empty()) {
+			Process tmp = queues[n_queues - 1].q.front();
+			queues[n_queues - 1].q.pop();
+			queues[0].q.push(tmp);
+		}
+	}
+}
+
+void Mfqs::do_io() {
+	size_t i;
+	for(i = 0; i < io.size(); i++) {
+		// if 0, io finished, return to queue 0
+		if(io[i].io == 0) {
+			add_to_queue_n(io[i], 0);
+			io.erase(io.begin() + i);
+
+			_DEBUG2(cout << "io finished for pid: " << pid << endl);
+		} else {
+			// decrement process io
+			io[i].io--;
+		}
+	}
+}
+
 vector<tuple<int, int, int>> Mfqs::schedule() {
 	int clock = 0;
 	int cpu = -1;
@@ -58,48 +96,19 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 
 	// while processes or things in queue or cpu occupied or processes still doing io
 	while(processes.size() || n_empty >= 0 || occupied || io.size()) {
-		// cout << "clock: " << clock << " n_empty: " << n_empty << endl;
-		_DEBUG(clock);
-
 		// add new processes to first queue
-		while(processes.size() && processes.back().arrival == clock) {
-			if(processes.back().io > 0) {
-				num_io++;
-			}
-			add_to_queue_n(processes.back(), 0);
-			processes.pop_back();
-
-			// cout << "pid added: " << pid << endl;
-		}
+		add_processes(clock, num_io);
 
 		// Move processes from last queue to first queue at aging interval
-		if(clock % aging_time == 0) {
-			while(!queues[n_queues - 1].q.empty()) {
-				Process tmp = queues[n_queues - 1].q.front();
-				queues[n_queues - 1].q.pop();
-				queues[0].q.push(tmp);
-			}
-		}
+		check_aging(clock);
 
 		// Check processes doing io
-		size_t i;
-		for(i = 0; i < io.size(); i++) {
-			// if 0, io finished, return to queue 0
-			if(io[i].io == 0) {
-				add_to_queue_n(io[i], 0);
-				io.erase(io.begin() + i);
-
-				// cout << "io finished for pid: " << pid << endl;
-			} else {
-				// decrement process io
-				io[i].io--;
-			}
-		}
+		do_io();
 
 		// if no process in cpu, add one
 		if(!occupied) {
 			if(n_empty < 0) {
-				// cout << "no process to run, continue" << endl;
+				_DEBUG2(cout << "no process to run, continue" << endl);
 			} else {
 				// get next process in line
 				delete running;
@@ -115,88 +124,60 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 
 				// process added to cpu - gantt
 				gantt_p = make_tuple(running->pid, clock, 0);
-
-				if(running->burst == 1 && running->io > 0) {
-					occupied = false;
-					io.push_back(*running);
-					sent_io++;
-					//should we add a new process to the cpu here to start running?
-
-					// removed from cpu to io - add to gantt list
-					get<2>(gantt_p) = clock;
-					gantt_list.push_back(gantt_p);
-
-					// cout << "pid " << running->pid << " added to io list" << endl;
-				} else {
-					running->burst--;
-					occupied = true;
-					if(running->burst == 0) {
-						occupied = false;
-
-						ran++;
-						avg_tt += (clock - running->arrival);
-
-						// process finished in cpu - add to gantt list
-						get<2>(gantt_p) = clock;
-						gantt_list.push_back(gantt_p);
-
-						// cout << "finished pid: " << running->pid << endl;
-					}
-				}
-				// cout << "added pid: " << running->pid << " to cpu" << endl;
 			}
-		} else {
-			// check if time quantum is up, if not, continue running
-			if(cpu == 0) {
+		}
+		
+		if(occupied) {
+			// cpu running...
+			if(running->burst == 1 && running->io > 0) {
 				occupied = false;
-				if(n_empty + 1 == n_queues) {
-					add_to_queue_n(*running, n_empty);
+				io.push_back(*running);
+				sent_io++;
 
-					// cout << "time quantum over pid: " << running->pid << " added to queue " << n_empty << endl;
-				} else {
-					add_to_queue_n(*running, n_empty + 1);
+				//again, should we add a new process to the cpu here?
 
-					// cout << "time quantum over pid: " << running->pid << " added to queue " << n_empty + 1 << endl;
-				}
-
-				// time quantum over - add to gantt list
+				// removed from cpu to io - add to gantt list
 				get<2>(gantt_p) = clock;
 				gantt_list.push_back(gantt_p);
 
+				_DEBUG2(cout << "pid " << running->pid << " added to io list" << endl);
 			} else {
-				// cpu running...
+				running->burst--;
+				cpu--;
 
-				if(running->burst == 1 && running->io > 0) {
+				if(running->burst == 0) {
+					// check if processes burst is done or if its time for io
 					occupied = false;
-					io.push_back(*running);
-					sent_io++;
 
-					//again, should we add a new process to the cpu here?
+					ran++;
+					avg_tt += (clock - running->arrival);
 
-					// removed from cpu to io - add to gantt list
+					// process finished in cpu - add to gantt list
 					get<2>(gantt_p) = clock;
 					gantt_list.push_back(gantt_p);
 
-					// cout << "pid " << running->pid << " added to io list" << endl;
+					_DEBUG2(cout << "finished pid: " << running->pid << endl);
 				} else {
-					running->burst--;
-
-					if(running->burst == 0) {
-						// check if processes burst is done or if its time for io
+					// check if time quantum is up, if not, continue running
+					if(cpu == 0) {
 						occupied = false;
+						if(n_empty + 1 == n_queues) {
+							//add back to last queue
+							add_to_queue_n(*running, n_empty);
 
-						ran++;
-						avg_tt += (clock - running->arrival);
+							_DEBUG2(cout << "time quantum over pid: " << running->pid << " added to queue " << n_empty << endl);
+						} else {
+							//add to next queue
+							add_to_queue_n(*running, n_empty + 1);
 
-						// process finished in cpu - add to gantt list
+							_DEBUG2(cout << "time quantum over pid: " << running->pid << " added to queue " << n_empty + 1 << endl);
+						}
+
+						// time quantum over - add to gantt list
 						get<2>(gantt_p) = clock;
 						gantt_list.push_back(gantt_p);
-
-						// cout << "finished pid: " << running->pid << endl;
 					}
 				}
-
-				cpu--;
 			}
 		}
 

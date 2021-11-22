@@ -3,8 +3,10 @@
 
 #ifdef DEBUG
 #define _DEBUG(x) do { std::cerr << #x << ": "<< x << std::endl; } while(0)
+#define _DEBUG2(x) x
 #else
 #define _DEBUG(x)
+#define _DEBUG2(x)
 #endif
 
 #include "Process.h"
