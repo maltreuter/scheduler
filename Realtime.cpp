@@ -44,6 +44,9 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 }
 
 int Realtime::schedule() {
+	ofstream gantt;
+	gantt.open("gantt.txt");
+
 	int size = processes.size();
 	int not_finished = 0;
 	int ran = 0;
@@ -77,6 +80,9 @@ int Realtime::schedule() {
 				running = run_queue[min_index].clone();
 				run_queue.erase(run_queue.begin() + min_index);
 				occupied = true;
+
+				//write to gantt file - beginning of process
+				gantt << running->pid << "," << clock << ",";
 			} else {
 				//if run_queue[min_index] has earlier deadline, put it in the cpu
 				//if deadlines are equal should we check burst?
@@ -86,6 +92,9 @@ int Realtime::schedule() {
 					delete running;
 					running = run_queue[min_index].clone();
 					run_queue.erase(run_queue.begin() + min_index);
+
+					//write to gantt file - end of process and beginning of new process
+					gantt << clock << endl << running->pid << "," << clock << ",";
 				}
 			}
 		}
@@ -96,6 +105,10 @@ int Realtime::schedule() {
 			if(hard && clock == running->deadline && running->burst > 0) {
 				cout << "pid " << running->pid << " not finished; arrival " << running->arrival << "; deadline " << running->deadline << "; burst " << running->burst << "; clock " << clock << endl;
 				not_finished++;
+
+				//write to gantt file - end of process
+				gantt << clock << endl;
+
 				break;
 			} else {
 				if(running->burst == 0) {
@@ -103,6 +116,9 @@ int Realtime::schedule() {
 					occupied = false;
 					ran++;
 					avg_tt += (clock - running->arrival);
+
+					//write to gantt file - end of processes
+					gantt << clock << endl;
 
 					// cout << "pid " << running->pid << " finished" << endl;
 				}
@@ -112,6 +128,9 @@ int Realtime::schedule() {
 	}
 
 	delete running;
+
+	gantt << clock << endl;
+	gantt.close();
 
 
 	cout << "number of processes: " << size << endl;
