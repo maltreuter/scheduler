@@ -129,7 +129,6 @@ int Realtime::schedule() {
 
 	delete running;
 
-	gantt << clock << endl;
 	gantt.close();
 
 

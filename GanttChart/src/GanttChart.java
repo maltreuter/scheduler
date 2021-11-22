@@ -30,15 +30,16 @@ public class GanttChart extends JFrame {
 
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            if(scanner.hasNextLine()) {
-                List<String> list = Arrays.asList(line.split(","));
-                process_list.add(new Process(list.get(0), Integer.parseInt(list.get(1)), Integer.parseInt(list.get(2))));
-            } else {
-                clock = Integer.parseInt(line);
+            List<String> list = Arrays.asList(line.split(","));
+            process_list.add(new Process(list.get(0), Integer.parseInt(list.get(1)), Integer.parseInt(list.get(2))));
+
+            if(!scanner.hasNextLine()) {
+                clock = Integer.parseInt(list.get(2));
+//                clock = Integer.parseInt(line);
             }
         }
 
-        System.out.println(clock);
+//        System.out.println(clock);
 
         HashMap<String, ArrayList<Process>> process_map = parseProcessListToMap(process_list);
 
@@ -60,13 +61,13 @@ public class GanttChart extends JFrame {
             process_map.put(process.getPid(), map_list);
         }
 
-        for (ArrayList<Process> list : process_map.values()) {
-            System.out.print(list.get(0).getPid() + ": [");
-            for (Process process : list) {
-                System.out.print("{" + process.getPid() + "; " + process.getStart() + "; " + process.getEnd() + "}, ");
-            }
-            System.out.println("]");
-        }
+//        for (ArrayList<Process> list : process_map.values()) {
+//            System.out.print(list.get(0).getPid() + ": [");
+//            for (Process process : list) {
+//                System.out.print("{" + process.getPid() + "; " + process.getStart() + "; " + process.getEnd() + "}, ");
+//            }
+//            System.out.println("]");
+//        }
 
         return process_map;
     }
@@ -74,7 +75,7 @@ public class GanttChart extends JFrame {
     public GanttChart(String applicationTitle, String chartTitle, HashMap<String, ArrayList<Process>> processes, int clock) {
         super(applicationTitle);
 
-        JFreeChart chart = ChartFactory.createGanttChart(chartTitle, "PID", "Clock Ticks", createDataSet(processes, clock), true, true, true);
+        JFreeChart chart = ChartFactory.createGanttChart(chartTitle, "PID", "Clock Ticks", createDataSet(processes, clock), false, false, false);
         CategoryPlot plot = chart.getCategoryPlot();
 
         DateAxis axis = (DateAxis) plot.getRangeAxis();
