@@ -43,9 +43,13 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 	return min_index;
 }
 
-int Realtime::schedule() {
+vector<tuple<int, int, int>> Realtime::schedule() {
 	ofstream gantt;
 	gantt.open("gantt.txt");
+
+	// PID, cpu start clock, cpu end clock
+	vector<tuple<int, int, int>> ganttdaddy;
+	tuple<int, int, int> gantt_p;
 
 	int size = processes.size();
 	int not_finished = 0;
@@ -70,7 +74,7 @@ int Realtime::schedule() {
 
 		//find index of process with earliest deadline
 		int min_index = find_earliest_deadline(clock, not_finished);
-		
+
 		//if something has changed
 		if(min_index >= 0) {
 			if(!occupied) {
@@ -83,6 +87,7 @@ int Realtime::schedule() {
 
 				//write to gantt file - beginning of process
 				gantt << running->pid << "," << clock << ",";
+				gantt_p = make_tuple(running->pid, clock, 0);
 			} else {
 				//if run_queue[min_index] has earlier deadline, put it in the cpu
 				//if deadlines are equal should we check burst?
@@ -95,6 +100,9 @@ int Realtime::schedule() {
 
 					//write to gantt file - end of process and beginning of new process
 					gantt << clock << endl << running->pid << "," << clock << ",";
+					get<2>(gantt_p) = clock;
+					ganttdaddy.push_back(gantt_p);
+					gantt_p = make_tuple(running->pid, clock, 0);
 				}
 			}
 		}
@@ -108,6 +116,8 @@ int Realtime::schedule() {
 
 				//write to gantt file - end of process
 				gantt << clock << endl;
+				get<2>(gantt_p) = clock;
+				ganttdaddy.push_back(gantt_p);
 
 				break;
 			} else {
@@ -119,6 +129,8 @@ int Realtime::schedule() {
 
 					//write to gantt file - end of processes
 					gantt << clock << endl;
+					get<2>(gantt_p) = clock;
+					ganttdaddy.push_back(gantt_p);
 
 					// cout << "pid " << running->pid << " finished" << endl;
 				}
@@ -142,5 +154,5 @@ int Realtime::schedule() {
 	}
 	cout << "clock ticks: " << clock << endl;
 
-	return 0;
+	return ganttdaddy;
 }

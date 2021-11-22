@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <deque>
 #include <fstream>
+#include <tuple>
 
 using namespace std;
 
@@ -28,7 +29,7 @@ class Realtime {
 		Realtime(bool hard, vector<Process> processes);
 		~Realtime();
 		int find_earliest_deadline(int clock, int &not_finished);
-		int schedule();
+		vector<tuple<int, int, int>> schedule();
 };
 
 #endif

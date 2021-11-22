@@ -34,12 +34,16 @@ int Mfqs::add_to_queue_n(Process p, int n) {
 	return p.pid;
 }
 
-int Mfqs::schedule() {
+vector<tuple<int, int, int>> Mfqs::schedule() {
 	int clock = 0;
 	int cpu = -1;
 	bool occupied = false;
 	Process *running = processes.back().clone();
 	int n_empty = queues_empty();
+
+	// gantt chart - pid, cpu start, cpu end
+	vector<tuple<int, int, int>> gantt;
+	tuple<int, int, int> gantt_p;
 
 	// stats
 	int ran = 0;
@@ -109,10 +113,18 @@ int Mfqs::schedule() {
 					cpu = running->burst;
 				}
 
+				// process added to cpu - gantt
+				gantt_p = make_tuple(running->pid, clock, 0);
+
 				if(running->burst == 1 && running->io > 0) {
 					occupied = false;
 					io.push_back(*running);
 					sent_io++;
+
+					// removed from cpu to io - add to gantt list
+					get<2>(gantt_p) = clock;
+					gantt.push_back(gantt_p);
+
 					// cout << "pid " << running->pid << " added to io list" << endl;
 				} else {
 					running->burst--;
@@ -122,6 +134,10 @@ int Mfqs::schedule() {
 
 						ran++;
 						avg_tt += (clock - running->arrival);
+
+						// process finished in cpu - add to gantt list
+						get<2>(gantt_p) = clock;
+						gantt.push_back(gantt_p);
 
 						// cout << "finished pid: " << running->pid << endl;
 					}
@@ -135,12 +151,17 @@ int Mfqs::schedule() {
 				if(n_empty + 1 == n_queues) {
 					add_to_queue_n(*running, n_empty);
 
-					// cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty << endl;
+					// cout << "time quantum over pid: " << running->pid << " added to queue " << n_empty << endl;
 				} else {
 					add_to_queue_n(*running, n_empty + 1);
 
-					// cout << "time quantum over pid: " << running->pid << " added back to queue " << n_empty + 1 << endl;
+					// cout << "time quantum over pid: " << running->pid << " added to queue " << n_empty + 1 << endl;
 				}
+
+				// time quantum over - add to gantt list
+				get<2>(gantt_p) = clock;
+				gantt.push_back(gantt_p);
+
 			} else {
 				// cpu running...
 
@@ -148,6 +169,11 @@ int Mfqs::schedule() {
 					occupied = false;
 					io.push_back(*running);
 					sent_io++;
+
+					// removed from cpu to io - add to gantt list
+					get<2>(gantt_p) = clock;
+					gantt.push_back(gantt_p);
+
 					// cout << "pid " << running->pid << " added to io list" << endl;
 				} else {
 					running->burst--;
@@ -158,6 +184,10 @@ int Mfqs::schedule() {
 
 						ran++;
 						avg_tt += (clock - running->arrival);
+
+						// process finished in cpu - add to gantt list
+						get<2>(gantt_p) = clock;
+						gantt.push_back(gantt_p);
 
 						// cout << "finished pid: " << running->pid << endl;
 					}
@@ -179,5 +209,5 @@ int Mfqs::schedule() {
 	cout << "Processes with io: " << num_io << endl;
 	cout << "Processes that did io: " << sent_io << endl;
 
-	return 0;
+	return gantt;
 }

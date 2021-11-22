@@ -10,6 +10,17 @@
 
 using namespace std;
 
+int write_tuple(vector<tuple<int, int, int>> gantt, string output_file) {
+	ofstream of;
+	of.open(output_file);
+
+	for(tuple<int, int, int> t : gantt)
+		of << get<0>(t) << "," << get<1>(t) << "," << get<2>(t) << endl;
+
+	of.close();
+	return 0;
+}
+
 vector<Process> get_processes(string input_file) {
 	vector<Process> processes;
 	int pid, burst, arrival, priority, deadline, io;
@@ -58,16 +69,49 @@ int main(int argc, char **argv) {
 	int aging_time;
 	int hard_real_time;
 
+	int make_gantt = 0;
+
 	string input_file;
+	string output_file = "tuple.txt";
 
 	vector<Process> processes;
 
+	vector<tuple<int, int, int>> gantt;
+
+	// Prompt for making a gantt chart or not
+	cout << "Select 1 for gantt chart, otherwise 0: ";
+	cin >> make_gantt;
+
 	// Input file or manual entry
-	cout << "Select an input file: ";
+	cout << "Select an input file or type manual: ";
 	cin >> input_file;
 
-	// get and sort processes from input file
-	processes = get_processes(input_file);
+	bool stop = false;
+	if(input_file.compare("manual") == 0) {
+		while(!stop) {
+			int pid, burst, arrival, priority, deadline, io;
+			cout << "PID: ";
+			cin >> pid;
+			cout << "Burst: ";
+			cin >> burst;
+			cout << "Arrival: ";
+			cin >> arrival;
+			cout << "Priority: ";
+			cin >> priority;
+			cout << "Deadline: ";
+			cin >> deadline;
+			cout << "IO: ";
+			cin >> io;
+
+			processes.push_back(Process(pid, burst, arrival, priority, deadline, io));
+
+			cout << "type 0 to add more, 1 to stop: ";
+			cin >> stop;
+		}
+	} else {
+		// get and sort processes from input file
+		processes = get_processes(input_file);
+	}
 
 	// for(Process p : processes)
 	// 	cout << "pid = " << p.pid << " arrival = " << p.arrival << " priority = " << p.priority << endl;
@@ -79,8 +123,6 @@ int main(int argc, char **argv) {
 
 	if(scheduler == 1) {
 		sort(processes.begin(), processes.end(), sort_mfqs);
-		// for(Process p : processes)
-		// 	cout << "pid = " << p.pid << " arrival = " << p.arrival << " priority = " << p.priority << endl;
 
 		// MFQS
 		cout << "How many queues? ";
@@ -98,12 +140,13 @@ int main(int argc, char **argv) {
 
 		// mfqs constructor
 		Mfqs guh = Mfqs(n_queues, time_quantum, aging_time, processes);
-		guh.schedule();
+		gantt = guh.schedule();
+
+		if(make_gantt) {
+			write_tuple(gantt, output_file);
+		}
 	} else {
 		sort(processes.begin(), processes.end(), sort_rt);
-		// for(Process p : processes)
-		// 	cout << "pid = " << p.pid << " arrival = " << p.arrival << " deadline = " << p.deadline << endl;
-		// Real Time
 
 		// Prompt for hard or soft (giggity)
 		cout << "Select 1 for hard real time or 0 for soft real time: ";
@@ -113,6 +156,11 @@ int main(int argc, char **argv) {
 
 		// realtime constructor
 		Realtime guh = Realtime(hard_real_time, processes);
-		guh.schedule();
+		gantt = guh.schedule();
+
+		if(make_gantt) {
+			write_tuple(gantt, output_file);
+		}
+
 	}
 }

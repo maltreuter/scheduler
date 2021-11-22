@@ -11,6 +11,7 @@
 #include <thread>
 #include <iostream>
 #include <vector>
+#include <tuple>
 
 #include "Process.h"
 #include "Queue.h"
@@ -30,7 +31,7 @@ class Mfqs {
 		~Mfqs();
 		int queues_empty();
 		int add_to_queue_n(Process p, int n);
-		int schedule();
+		vector<tuple<int, int, int>> schedule();
 };
 
 #endif
