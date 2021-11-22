@@ -118,7 +118,7 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 
 				//write to gantt file - end of process
 				// gantt << clock << endl;
-				get<2>(gantt_p) = clock;
+				get<2>(gantt_p) = clock + 1;
 				gantt_list.push_back(gantt_p);
 
 				break;
@@ -132,7 +132,7 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 
 					//write to gantt file - end of processes
 					// gantt << clock << endl;
-					get<2>(gantt_p) = clock;
+					get<2>(gantt_p) = clock + 1;
 					gantt_list.push_back(gantt_p);
 
 					// cout << "pid " << running->pid << " finished" << endl;
