@@ -24,7 +24,7 @@ public class GanttChart extends JFrame {
     public static void main(String[] args) throws FileNotFoundException {
         ArrayList<Process> process_list = new ArrayList<>();
 
-        File file = new File("gantt.txt");
+        File file = new File("../gantt.txt");
         Scanner scanner = new Scanner(file);
         int clock = 0;
 
@@ -42,7 +42,7 @@ public class GanttChart extends JFrame {
 
         HashMap<String, ArrayList<Process>> process_map = parseProcessListToMap(process_list);
 
-        GanttChart chart = new GanttChart("Scheduler Gantt Chart", "MFQS", process_map, clock);
+        GanttChart chart = new GanttChart("Scheduler Gantt Chart", "", process_map, clock);
         chart.pack();
         chart.setVisible(true);
     }
@@ -82,7 +82,7 @@ public class GanttChart extends JFrame {
         axis.setDateFormatOverride(new SimpleDateFormat("SS"));
         ChartPanel chartPanel = new ChartPanel(chart);
 
-        chartPanel.setPreferredSize(new Dimension(1000, 600));
+        chartPanel.setPreferredSize(new Dimension(1400, 800));
 
         setContentPane(chartPanel);
     }
