@@ -42,7 +42,7 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 	int n_empty = queues_empty();
 
 	// gantt chart - pid, cpu start, cpu end
-	vector<tuple<int, int, int>> gantt;
+	vector<tuple<int, int, int>> gantt_list;
 	tuple<int, int, int> gantt_p;
 
 	// stats
@@ -120,10 +120,11 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 					occupied = false;
 					io.push_back(*running);
 					sent_io++;
+					//should we add a new process to the cpu here to start running?
 
 					// removed from cpu to io - add to gantt list
 					get<2>(gantt_p) = clock;
-					gantt.push_back(gantt_p);
+					gantt_list.push_back(gantt_p);
 
 					// cout << "pid " << running->pid << " added to io list" << endl;
 				} else {
@@ -137,7 +138,7 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 
 						// process finished in cpu - add to gantt list
 						get<2>(gantt_p) = clock;
-						gantt.push_back(gantt_p);
+						gantt_list.push_back(gantt_p);
 
 						// cout << "finished pid: " << running->pid << endl;
 					}
@@ -160,7 +161,7 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 
 				// time quantum over - add to gantt list
 				get<2>(gantt_p) = clock;
-				gantt.push_back(gantt_p);
+				gantt_list.push_back(gantt_p);
 
 			} else {
 				// cpu running...
@@ -170,9 +171,11 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 					io.push_back(*running);
 					sent_io++;
 
+					//again, should we add a new process to the cpu here?
+
 					// removed from cpu to io - add to gantt list
 					get<2>(gantt_p) = clock;
-					gantt.push_back(gantt_p);
+					gantt_list.push_back(gantt_p);
 
 					// cout << "pid " << running->pid << " added to io list" << endl;
 				} else {
@@ -187,7 +190,7 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 
 						// process finished in cpu - add to gantt list
 						get<2>(gantt_p) = clock;
-						gantt.push_back(gantt_p);
+						gantt_list.push_back(gantt_p);
 
 						// cout << "finished pid: " << running->pid << endl;
 					}
@@ -204,10 +207,9 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 	delete running;
 
 	cout << "Scheduled " << ran << " processes out of " << pp_size << " in " << clock << " clock ticks" << endl;
-	cout << "avg tt: " << avg_tt << endl;
 	cout << "Average turn around time: " << avg_tt / ran << " clock ticks" << endl;
 	cout << "Processes with io: " << num_io << endl;
 	cout << "Processes that did io: " << sent_io << endl;
 
-	return gantt;
+	return gantt_list;
 }

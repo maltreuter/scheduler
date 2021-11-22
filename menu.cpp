@@ -44,6 +44,7 @@ vector<Process> get_processes(string input_file) {
 	return processes;
 }
 
+//sort processes by arrival time and priority
 bool sort_mfqs(Process x, Process y) {
 	if(x.arrival == y.arrival) {
 		return x.priority < y.priority;
@@ -52,6 +53,7 @@ bool sort_mfqs(Process x, Process y) {
 	}
 }
 
+//sort processes by arrival time and deadline
 bool sort_rt(Process x, Process y) {
 	if(x.arrival == y.arrival) {
 		return x.deadline > y.deadline;
@@ -72,14 +74,14 @@ int main(int argc, char **argv) {
 	int make_gantt = 0;
 
 	string input_file;
-	string output_file = "tuple.txt";
+	string output_file = "gantt.txt";
 
 	vector<Process> processes;
 
 	vector<tuple<int, int, int>> gantt;
 
 	// Prompt for making a gantt chart or not
-	cout << "Select 1 for gantt chart, otherwise 0: ";
+	cout << "Select 1 for Gantt chart, otherwise 0: ";
 	cin >> make_gantt;
 
 	// Input file or manual entry
@@ -136,15 +138,12 @@ int main(int argc, char **argv) {
 		cout << "What is aging interval? ";
 		cin >> aging_time;
 
-		cout << "Running MFQS with " << n_queues << " queues and " << time_quantum << " time quantum" << endl;
+		cout << "Running MFQS with " << n_queues << " queues and a time quantum of " << time_quantum << endl;
 
 		// mfqs constructor
-		Mfqs guh = Mfqs(n_queues, time_quantum, aging_time, processes);
-		gantt = guh.schedule();
+		Mfqs mfqs = Mfqs(n_queues, time_quantum, aging_time, processes);
+		gantt = mfqs.schedule();
 
-		if(make_gantt) {
-			write_tuple(gantt, output_file);
-		}
 	} else {
 		sort(processes.begin(), processes.end(), sort_rt);
 
@@ -155,12 +154,12 @@ int main(int argc, char **argv) {
 		cout << "Running RTS with input file: " << input_file << " and hard/soft: " << hard_real_time << endl;
 
 		// realtime constructor
-		Realtime guh = Realtime(hard_real_time, processes);
-		gantt = guh.schedule();
+		Realtime rt = Realtime(hard_real_time, processes);
+		gantt = rt.schedule();
 
-		if(make_gantt) {
-			write_tuple(gantt, output_file);
-		}
+	}
 
+	if(make_gantt && gantt.size() > 0) {
+		write_tuple(gantt, output_file);
 	}
 }

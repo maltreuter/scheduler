@@ -24,7 +24,7 @@ public class GanttChart extends JFrame {
     public static void main(String[] args) throws FileNotFoundException {
         ArrayList<Process> process_list = new ArrayList<>();
 
-        File file = new File("src/gantt.txt");
+        File file = new File("../gantt.txt");
         Scanner scanner = new Scanner(file);
         int clock = 0;
 
@@ -35,11 +35,10 @@ public class GanttChart extends JFrame {
 
             if(!scanner.hasNextLine()) {
                 clock = Integer.parseInt(list.get(2));
-//                clock = Integer.parseInt(line);
             }
         }
 
-//        System.out.println(clock);
+        System.out.println("Final clock tick: " + clock);
 
         HashMap<String, ArrayList<Process>> process_map = parseProcessListToMap(process_list);
 
@@ -61,13 +60,14 @@ public class GanttChart extends JFrame {
             process_map.put(process.getPid(), map_list);
         }
 
-//        for (ArrayList<Process> list : process_map.values()) {
-//            System.out.print(list.get(0).getPid() + ": [");
-//            for (Process process : list) {
-//                System.out.print("{" + process.getPid() + "; " + process.getStart() + "; " + process.getEnd() + "}, ");
-//            }
-//            System.out.println("]");
-//        }
+        System.out.println("Processes:");
+        for (ArrayList<Process> list : process_map.values()) {
+            System.out.print(list.get(0).getPid() + ": [");
+            for (Process process : list) {
+                System.out.print("{" + process.getStart() + "; " + process.getEnd() + "}, ");
+            }
+            System.out.println("]");
+        }
 
         return process_map;
     }

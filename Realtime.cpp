@@ -44,11 +44,11 @@ int Realtime::find_earliest_deadline(int clock, int &not_finished) {
 }
 
 vector<tuple<int, int, int>> Realtime::schedule() {
-	ofstream gantt;
-	gantt.open("gantt.txt");
+	// ofstream gantt;
+	// gantt.open("gantt.txt");
 
 	// PID, cpu start clock, cpu end clock
-	vector<tuple<int, int, int>> ganttdaddy;
+	vector<tuple<int, int, int>> gantt_list;
 	tuple<int, int, int> gantt_p;
 
 	int size = processes.size();
@@ -63,6 +63,7 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 	cout << "scheduling " << size << " processes."  << endl;
 	chrono::milliseconds timespan(2000);
 	this_thread::sleep_for(timespan);
+
 
 	//while processes or things in run queue or cpu occupied
 	while(processes.size() || run_queue.size() || occupied) {
@@ -86,11 +87,10 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 				occupied = true;
 
 				//write to gantt file - beginning of process
-				gantt << running->pid << "," << clock << ",";
+				// gantt << running->pid << "," << clock << ",";
 				gantt_p = make_tuple(running->pid, clock, 0);
 			} else {
-				//if run_queue[min_index] has earlier deadline, put it in the cpu
-				//if deadlines are equal should we check burst?
+				//if run_queue[min_index] has earlier deadline, swap it with what's in the cpu
 				if(run_queue[min_index].deadline < running->deadline) {
 					// cout << "swapping processes" << endl;
 					run_queue.push_back(*running);
@@ -99,9 +99,9 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 					run_queue.erase(run_queue.begin() + min_index);
 
 					//write to gantt file - end of process and beginning of new process
-					gantt << clock << endl << running->pid << "," << clock << ",";
+					// gantt << clock << endl << running->pid << "," << clock << ",";
 					get<2>(gantt_p) = clock;
-					ganttdaddy.push_back(gantt_p);
+					gantt_list.push_back(gantt_p);
 					gantt_p = make_tuple(running->pid, clock, 0);
 				}
 			}
@@ -110,17 +110,20 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 		//if there's something in the cpu, run it
 		if(occupied) {
 			running->burst--;
+
+			//if process has reached its deadline and has not finished
 			if(hard && clock == running->deadline && running->burst > 0) {
 				cout << "pid " << running->pid << " not finished; arrival " << running->arrival << "; deadline " << running->deadline << "; burst " << running->burst << "; clock " << clock << endl;
 				not_finished++;
 
 				//write to gantt file - end of process
-				gantt << clock << endl;
+				// gantt << clock << endl;
 				get<2>(gantt_p) = clock;
-				ganttdaddy.push_back(gantt_p);
+				gantt_list.push_back(gantt_p);
 
 				break;
 			} else {
+				//process finished
 				if(running->burst == 0) {
 					cout << "ran pid " << running->pid << "; arrival " << running->arrival << "; deadline " << running->deadline << "; clock " << clock << endl;
 					occupied = false;
@@ -128,9 +131,9 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 					avg_tt += (clock - running->arrival);
 
 					//write to gantt file - end of processes
-					gantt << clock << endl;
+					// gantt << clock << endl;
 					get<2>(gantt_p) = clock;
-					ganttdaddy.push_back(gantt_p);
+					gantt_list.push_back(gantt_p);
 
 					// cout << "pid " << running->pid << " finished" << endl;
 				}
@@ -141,18 +144,16 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 
 	delete running;
 
-	gantt.close();
+	// gantt.close();
 
 
-	cout << "number of processes: " << size << endl;
-	cout << "number of processes ran: " << ran << endl;
-	cout << "number of processes not finished: " << not_finished << endl;
-	cout << "ran + not finished: " << ran + not_finished << endl;
-	cout << "avg tt: " << avg_tt << endl;
+	cout << "Number of processes: " << size << endl;
+	cout << "Number of processes ran: " << ran << endl;
+	cout << "Number of processes not finished: " << not_finished << endl;
 	if(ran > 0) {
 		cout << "Average turn around time: " << avg_tt / ran << endl;
 	}
-	cout << "clock ticks: " << clock << endl;
+	cout << "Number of clock ticks: " << clock << endl;
 
-	return ganttdaddy;
+	return gantt_list;
 }
