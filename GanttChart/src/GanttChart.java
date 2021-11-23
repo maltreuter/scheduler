@@ -35,11 +35,10 @@ public class GanttChart extends JFrame {
 
             if(!scanner.hasNextLine()) {
                 clock = Integer.parseInt(list.get(2));
-                System.out.println(clock);
             }
         }
 
-        System.out.println("Final clock tick: " + clock);
+//        System.out.println("Final clock tick: " + clock);
 
         HashMap<String, ArrayList<Process>> process_map = parseProcessListToMap(process_list);
 
@@ -61,7 +60,7 @@ public class GanttChart extends JFrame {
             process_map.put(process.getPid(), map_list);
         }
 
-        System.out.println("Processes:");
+//        System.out.println("Processes:");
 //        for (ArrayList<Process> list : process_map.values()) {
 //            System.out.print(list.get(0).getPid() + ": [");
 //            for (Process process : list) {
@@ -80,7 +79,7 @@ public class GanttChart extends JFrame {
         CategoryPlot plot = chart.getCategoryPlot();
 
         DateAxis axis = (DateAxis) plot.getRangeAxis();
-        axis.setDateFormatOverride(new SimpleDateFormat("SS"));
+        axis.setDateFormatOverride(new SimpleDateFormat("SSS"));
         ChartPanel chartPanel = new ChartPanel(chart);
 
         chartPanel.setPreferredSize(new Dimension(1400, 800));
