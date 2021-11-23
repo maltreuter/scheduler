@@ -225,7 +225,7 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 
 	delete running;
 
-	cout << "Scheduled " << ran << " processes out of " << pp_size << " in " << clock << " clock ticks" << endl;
+	cout << "\nScheduled " << ran << " processes out of " << pp_size << " in " << clock << " clock ticks" << endl;
 	cout << "Average turn around time: " << avg_tt / ran << " clock ticks" << endl;
 	cout << "Average wait time: " << avg_wait / ran << " clock ticks" << endl;
 	cout << "Processes with io: " << num_io << endl;

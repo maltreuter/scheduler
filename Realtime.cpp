@@ -152,7 +152,7 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 	delete running;
 
 
-	cout << "Number of processes: " << size << endl;
+	cout << "\nNumber of processes: " << size << endl;
 	cout << "Number of processes ran: " << ran << endl;
 	cout << "Number of processes not finished: " << not_finished << endl;
 	if(ran > 0) {
