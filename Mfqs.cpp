@@ -20,6 +20,11 @@ Mfqs::~Mfqs() {
 
 }
 
+/**
+ * @brief finds the first queue that is not empty, or returns -1 if all are empty
+ * 
+ * @return int index of the queue
+ */
 int Mfqs::queues_empty() {
 	for(int i = 0; i < n_queues; i++) {
 		if(queues[i].q.size() > 0) {
@@ -29,8 +34,15 @@ int Mfqs::queues_empty() {
 	return -1;
 }
 
+/**
+ * @brief adds a process to the given queue
+ * 
+ * @param p the process to be added
+ * @param n the queue to be added to
+ * @return int the pid of the added process
+ */
 int Mfqs::add_to_queue_n(Process p, int n) {
-	// check if queue exists, if not default to last queue
+	// Check if queue exists, if not default to last queue
 	if(n >= n_queues) {
 		p.queue = n_queues - 1;
 		queues[n_queues - 1].q.push(p);
@@ -41,6 +53,12 @@ int Mfqs::add_to_queue_n(Process p, int n) {
 	return p.pid;
 }
 
+/**
+ * @brief add processes that are arriving to the first queue
+ * 
+ * @param clock the current clock tick
+ * @param num_io the number of processes that have io
+ */
 void Mfqs::add_processes(int clock, int &num_io) {
 	while(processes.size() && processes.back().arrival == clock) {
 		if(processes.back().io > 0) {
@@ -51,6 +69,11 @@ void Mfqs::add_processes(int clock, int &num_io) {
 	}
 }
 
+/**
+ * @brief checks if the aging interval has been hit in the last queue and moves all of the processes to the first queue
+ * 
+ * @param clock the current clock tick
+ */
 void Mfqs::check_aging(int clock) {
 	if(clock % aging_time == 0) {
 		while(!queues[n_queues - 1].q.empty()) {
@@ -61,21 +84,30 @@ void Mfqs::check_aging(int clock) {
 	}
 }
 
+/**
+ * @brief runs the io for processes in the io queue
+ * 
+ */
 void Mfqs::do_io() {
 	size_t i;
 	for(i = 0; i < io.size(); i++) {
-		// if 0, io finished, return to queue 0
+		// If 0, io finished, return to queue 0
 		if(io[i].io == 0) {
 			add_to_queue_n(io[i], 0);
 			_DEBUG2(cout << "io finished for pid: " << io[i].pid << endl);
 			io.erase(io.begin() + i);
 		} else {
-			// decrement process io
+			// Decrement process io
 			io[i].io--;
 		}
 	}
 }
 
+/**
+ * @brief schedules the processes using MFQS
+ * 
+ * @return vector<tuple<int, int, int>> cpu enter and exit times for processes for the Gantt chart
+ */
 vector<tuple<int, int, int>> Mfqs::schedule() {
 	int clock = 0;
 	int cpu = -1;
@@ -83,11 +115,11 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 	Process *running = processes.back().clone();
 	int n_empty = queues_empty();
 
-	// gantt chart - pid, cpu start, cpu end
+	// Gantt chart - pid, cpu start, cpu end
 	vector<tuple<int, int, int>> gantt_list;
 	tuple<int, int, int> gantt_p;
 
-	// stats
+	// Stats
 	int ran = 0;
 	int pp_size = processes.size();
 	size_t avg_tt = 0;
@@ -99,9 +131,9 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 	chrono::milliseconds timespan(2000);
 	this_thread::sleep_for(timespan);
 
-	// while processes or things in queue or cpu occupied or processes still doing io
+	// While processes or things in queue or cpu occupied or processes still doing io
 	while(processes.size() || n_empty >= 0 || occupied || io.size()) {
-		// add new processes to first queue
+		// Add new processes to first queue
 		add_processes(clock, num_io);
 
 		// Move processes from last queue to first queue at aging interval
@@ -112,12 +144,12 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 
 		n_empty = queues_empty();
 
-		// if no process in cpu, add one
+		// If no process in cpu, add one
 		if(!occupied) {
 			if(n_empty < 0) {
 				_DEBUG2(cout << "no process to run, continue" << endl);
 			} else {
-				// get next process in line
+				// Get next process in line
 				delete running;
 
 				while(!occupied) {
@@ -131,20 +163,20 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 					queues[n_empty].q.pop();
 				}
 
-				// set time slice for cpu
+				// Set time slice for cpu
 				if(queues[n_empty].rr) {
 					cpu = queues[n_empty].time_quantum;
 				} else {
 					cpu = running->burst;
 				}
 
-				// process added to cpu - gantt
+				// Process added to cpu - gantt
 				gantt_p = make_tuple(running->pid, clock, 0);
 			}
 		}
 
 		if(occupied) {
-			// cpu running...
+			// CPU running...
 			running->burst--;
 			cpu--;
 
@@ -153,36 +185,34 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 				io.push_back(*running);
 				sent_io++;
 
-				//again, should we add a new process to the cpu here?
-
-				// removed from cpu to io - add to gantt list
+				// Removed from cpu to io - add to gantt list
 				get<2>(gantt_p) = clock + 1;
 				gantt_list.push_back(gantt_p);
 
 				_DEBUG2(cout << "pid " << running->pid << " added to io list" << endl);
 			} else if(running->burst == 0) {
-				// check if processes burst is done or if its time for io
+				// Check if processes burst is done or if its time for io
 				occupied = false;
 
 				ran++;
 				avg_tt += (clock - running->arrival);
 				avg_wait += (clock - running->arrival - running->og_burst);
 
-				// process finished in cpu - add to gantt list
+				// Process finished in cpu - add to gantt list
 				get<2>(gantt_p) = clock + 1;
 				gantt_list.push_back(gantt_p);
 
 				_DEBUG2(cout << "finished pid: " << running->pid << endl);
 			} else {
-				// check if time quantum is up, if not, continue running
+				// Check if time quantum is up, if not, continue running
 				if(cpu == 0) {
 					occupied = false;
 
-					//add to next queue
+					// Add to next queue
 					add_to_queue_n(*running, running->queue + 1);
 					_DEBUG2(cout << "time quantum over pid: " << running->pid << " added to queue " << running->queue + 1 << endl);
 
-					// time quantum over - add to gantt list
+					// Time quantum over - add to gantt list
 					get<2>(gantt_p) = clock + 1;
 					gantt_list.push_back(gantt_p);
 				}

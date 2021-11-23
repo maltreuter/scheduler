@@ -10,6 +10,13 @@
 
 using namespace std;
 
+/**
+ * @brief writes the process enter and exit times to a file
+ * 
+ * @param gantt the process enter and exit times for the cpu
+ * @param output_file the name of the output file
+ * @return int 
+ */
 int write_tuple(vector<tuple<int, int, int>> gantt, string output_file) {
 	ofstream of;
 	of.open(output_file);
@@ -21,6 +28,12 @@ int write_tuple(vector<tuple<int, int, int>> gantt, string output_file) {
 	return 0;
 }
 
+/**
+ * @brief read the input file and add the processes to a list
+ * 
+ * @param input_file the name of the input file
+ * @return vector<Process> a list of all processes
+ */
 vector<Process> get_processes(string input_file) {
 	vector<Process> processes;
 	int pid, burst, arrival, priority, deadline, io;
@@ -44,7 +57,14 @@ vector<Process> get_processes(string input_file) {
 	return processes;
 }
 
-//sort processes by arrival time and priority
+/**
+ * @brief sort processes by arrival time and priority
+ * 
+ * @param x first process to compare
+ * @param y second process to compare
+ * @return true if process x comes before process y
+ * @return false if process y comes before process x
+ */
 bool sort_mfqs(Process x, Process y) {
 	if(x.arrival == y.arrival) {
 		return x.priority < y.priority;
@@ -53,7 +73,14 @@ bool sort_mfqs(Process x, Process y) {
 	}
 }
 
-//sort processes by arrival time and deadline
+/**
+ * @brief sort processes by arrival time and deadline
+ * 
+ * @param x first process to compare
+ * @param y second process to compare
+ * @return true if process x comes before process y
+ * @return false if process y comes before process x
+ */
 bool sort_rt(Process x, Process y) {
 	if(x.arrival == y.arrival) {
 		return x.deadline > y.deadline;
@@ -63,8 +90,6 @@ bool sort_rt(Process x, Process y) {
 }
 
 int main(int argc, char **argv) {
-	cout << "Guh Mommy and Daddy" << endl;
-
 	int scheduler;
 	int n_queues = 0;
 	int time_quantum;
@@ -88,6 +113,7 @@ int main(int argc, char **argv) {
 	cout << "Select an input file or type manual: ";
 	cin >> input_file;
 
+	// User input
 	bool stop = false;
 	if(input_file.compare("manual") == 0) {
 		while(!stop) {
@@ -111,12 +137,9 @@ int main(int argc, char **argv) {
 			cin >> stop;
 		}
 	} else {
-		// get and sort processes from input file
+		// Get processes from input file
 		processes = get_processes(input_file);
 	}
-
-	// for(Process p : processes)
-	// 	cout << "pid = " << p.pid << " arrival = " << p.arrival << " priority = " << p.priority << endl;
 
 	cout << "Select a scheduler: " << endl;
 	cout << "1. Multi-level Feedback Queue Scheduler" << endl;
@@ -124,9 +147,9 @@ int main(int argc, char **argv) {
 	cin >> scheduler;
 
 	if(scheduler == 1) {
+		// MFQS
 		sort(processes.begin(), processes.end(), sort_mfqs);
 
-		// MFQS
 		cout << "How many queues? ";
 		cin >> n_queues;
 
@@ -140,25 +163,27 @@ int main(int argc, char **argv) {
 
 		cout << "Running MFQS with " << n_queues << " queues and a time quantum of " << time_quantum << endl;
 
-		// mfqs constructor
+		// Mfqs constructor
 		Mfqs mfqs = Mfqs(n_queues, time_quantum, aging_time, processes);
 		gantt = mfqs.schedule();
 
 	} else {
+		// RTS
 		sort(processes.begin(), processes.end(), sort_rt);
 
-		// Prompt for hard or soft (giggity)
+		// Prompt for hard or soft
 		cout << "Select 1 for hard real time or 0 for soft real time: ";
 		cin >> hard_real_time;
 
 		cout << "Running RTS with input file: " << input_file << " and hard/soft: " << hard_real_time << endl;
 
-		// realtime constructor
+		// Realtime constructor
 		Realtime rt = Realtime(hard_real_time, processes);
 		gantt = rt.schedule();
 
 	}
 
+	// Write to gantt.txt
 	if(make_gantt && gantt.size() > 0) {
 		write_tuple(gantt, output_file);
 	}

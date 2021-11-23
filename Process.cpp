@@ -16,6 +16,11 @@ Process::~Process() {
 
 }
 
+/**
+ * @brief makes a copy of the process
+ * 
+ * @return Process* the copied process
+ */
 Process* Process::clone() {
 	Process *p = new Process(this->pid, this->burst, this->arrival, this->priority, this->deadline, this->io);
 	p->queue = this->queue;
