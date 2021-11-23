@@ -10,6 +10,7 @@ class Process {
 		int deadline;
 		int io;
 
+		int og_burst;
 		int queue;
 
 		Process();

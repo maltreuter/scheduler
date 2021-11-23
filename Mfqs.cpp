@@ -91,6 +91,7 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 	int ran = 0;
 	int pp_size = processes.size();
 	size_t avg_tt = 0;
+	size_t avg_wait = 0;
 	int num_io = 0;
 	int sent_io = 0;
 
@@ -118,9 +119,17 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 			} else {
 				// get next process in line
 				delete running;
-				running = queues[n_empty].q.front().clone();
-				occupied = true;
-				queues[n_empty].q.pop();
+
+				while(!occupied) {
+					running = queues[n_empty].q.front().clone();
+					if(running->burst == 1 && running->io > 0) {
+						io.push_back(*running);
+						sent_io++;
+					} else {
+						occupied = true;
+					}
+					queues[n_empty].q.pop();
+				}
 
 				// set time slice for cpu
 				if(queues[n_empty].rr) {
@@ -136,6 +145,9 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 
 		if(occupied) {
 			// cpu running...
+			running->burst--;
+			cpu--;
+
 			if(running->burst == 1 && running->io > 0) {
 				occupied = false;
 				io.push_back(*running);
@@ -144,41 +156,38 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 				//again, should we add a new process to the cpu here?
 
 				// removed from cpu to io - add to gantt list
-				get<2>(gantt_p) = clock;
+				get<2>(gantt_p) = clock + 1;
 				gantt_list.push_back(gantt_p);
 
 				_DEBUG2(cout << "pid " << running->pid << " added to io list" << endl);
-			} else {
-				running->burst--;
-				cpu--;
+			} else if(running->burst == 0) {
+				// check if processes burst is done or if its time for io
+				occupied = false;
 
-				if(running->burst == 0) {
-					// check if processes burst is done or if its time for io
+				ran++;
+				avg_tt += (clock - running->arrival);
+				avg_wait += (clock - running->arrival - running->og_burst);
+
+				// process finished in cpu - add to gantt list
+				get<2>(gantt_p) = clock + 1;
+				gantt_list.push_back(gantt_p);
+
+				_DEBUG2(cout << "finished pid: " << running->pid << endl);
+			} else {
+				// check if time quantum is up, if not, continue running
+				if(cpu == 0) {
 					occupied = false;
 
-					ran++;
-					avg_tt += (clock - running->arrival);
+					//add to next queue
+					add_to_queue_n(*running, running->queue + 1);
+					_DEBUG2(cout << "time quantum over pid: " << running->pid << " added to queue " << running->queue + 1 << endl);
 
-					// process finished in cpu - add to gantt list
-					get<2>(gantt_p) = clock;
+					// time quantum over - add to gantt list
+					get<2>(gantt_p) = clock + 1;
 					gantt_list.push_back(gantt_p);
-
-					_DEBUG2(cout << "finished pid: " << running->pid << endl);
-				} else {
-					// check if time quantum is up, if not, continue running
-					if(cpu == 0) {
-						occupied = false;
-
-						//add to next queue
-						add_to_queue_n(*running, running->queue + 1);
-						_DEBUG2(cout << "time quantum over pid: " << running->pid << " added to queue " << running->queue << endl);
-
-						// time quantum over - add to gantt list
-						get<2>(gantt_p) = clock;
-						gantt_list.push_back(gantt_p);
-					}
 				}
 			}
+
 		}
 
 		clock++;
@@ -188,6 +197,7 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 
 	cout << "Scheduled " << ran << " processes out of " << pp_size << " in " << clock << " clock ticks" << endl;
 	cout << "Average turn around time: " << avg_tt / ran << " clock ticks" << endl;
+	cout << "Average wait time: " << avg_wait / ran << " clock ticks" << endl;
 	cout << "Processes with io: " << num_io << endl;
 	cout << "Processes that did io: " << sent_io << endl;
 

@@ -59,6 +59,7 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 	bool occupied = false;
 	Process *running = processes.back().clone();
 	size_t avg_tt = 0;
+	size_t avg_wait = 0;
 
 	cout << "Scheduling " << size << " processes."  << endl;
 	chrono::milliseconds timespan(2000);
@@ -126,6 +127,7 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 					occupied = false;
 					ran++;
 					avg_tt += (clock - running->arrival);
+					avg_wait += (clock - running->arrival - running->og_burst);
 
 					//write to gantt file - end of processes
 					get<2>(gantt_p) = clock + 1;
@@ -146,6 +148,7 @@ vector<tuple<int, int, int>> Realtime::schedule() {
 	cout << "Number of processes not finished: " << not_finished << endl;
 	if(ran > 0) {
 		cout << "Average turn around time: " << avg_tt / ran << endl;
+		cout << "Average wait time: " << avg_wait / ran << endl;
 	}
 	cout << "Number of clock ticks: " << clock << endl;
 

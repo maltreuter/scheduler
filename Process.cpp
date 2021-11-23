@@ -9,6 +9,7 @@ Process::Process(int pid, int burst, int arrival, int priority, int deadline, in
 	this->priority = priority;
 	this->deadline = deadline;
 	this->io = io;
+	this->og_burst = burst;
 }
 
 Process::~Process() {
@@ -16,5 +17,7 @@ Process::~Process() {
 }
 
 Process* Process::clone() {
-	return new Process(this->pid, this->burst, this->arrival, this->priority, this->deadline, this->io);
+	Process *p = new Process(this->pid, this->burst, this->arrival, this->priority, this->deadline, this->io);
+	p->queue = this->queue;
+	return p;
 }

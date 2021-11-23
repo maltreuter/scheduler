@@ -28,4 +28,4 @@ realtime_d.o:
 	$(CC) $(FLAGS) -D DEBUG -c Realtime.cpp
 
 clean:
-	rm *.o tuple.txt scheduler
+	rm *.o gantt.txt scheduler

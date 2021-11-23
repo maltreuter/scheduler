@@ -35,6 +35,7 @@ public class GanttChart extends JFrame {
 
             if(!scanner.hasNextLine()) {
                 clock = Integer.parseInt(list.get(2));
+                System.out.println(clock);
             }
         }
 
@@ -61,13 +62,13 @@ public class GanttChart extends JFrame {
         }
 
         System.out.println("Processes:");
-        for (ArrayList<Process> list : process_map.values()) {
-            System.out.print(list.get(0).getPid() + ": [");
-            for (Process process : list) {
-                System.out.print("{" + process.getStart() + "; " + process.getEnd() + "}, ");
-            }
-            System.out.println("]");
-        }
+//        for (ArrayList<Process> list : process_map.values()) {
+//            System.out.print(list.get(0).getPid() + ": [");
+//            for (Process process : list) {
+//                System.out.print("{" + process.getStart() + "; " + process.getEnd() + "}, ");
+//            }
+//            System.out.println("]");
+//        }
 
         return process_map;
     }
