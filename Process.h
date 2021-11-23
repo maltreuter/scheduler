@@ -9,7 +9,8 @@ class Process {
 		int priority;
 		int deadline;
 		int io;
-		int start;
+
+		int queue;
 
 		Process();
 		Process(int pid, int burst, int arrival, int priority, int deadline, int io);

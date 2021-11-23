@@ -30,7 +30,14 @@ int Mfqs::queues_empty() {
 }
 
 int Mfqs::add_to_queue_n(Process p, int n) {
-	queues[n].q.push(p);
+	// check if queue exists, if not default to last queue
+	if(n >= n_queues) {
+		p.queue = n_queues - 1;
+		queues[n_queues - 1].q.push(p);
+	} else {
+		p.queue = n;
+		queues[n].q.push(p);
+	}
 	return p.pid;
 }
 
@@ -41,8 +48,6 @@ void Mfqs::add_processes(int clock, int &num_io) {
 		}
 		add_to_queue_n(processes.back(), 0);
 		processes.pop_back();
-
-		_DEBUG2(cout << "pid added: " << pid << endl);
 	}
 }
 
@@ -62,9 +67,8 @@ void Mfqs::do_io() {
 		// if 0, io finished, return to queue 0
 		if(io[i].io == 0) {
 			add_to_queue_n(io[i], 0);
+			_DEBUG2(cout << "io finished for pid: " << io[i].pid << endl);
 			io.erase(io.begin() + i);
-
-			_DEBUG2(cout << "io finished for pid: " << pid << endl);
 		} else {
 			// decrement process io
 			io[i].io--;
@@ -105,6 +109,8 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 		// Check processes doing io
 		do_io();
 
+		n_empty = queues_empty();
+
 		// if no process in cpu, add one
 		if(!occupied) {
 			if(n_empty < 0) {
@@ -113,6 +119,7 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 				// get next process in line
 				delete running;
 				running = queues[n_empty].q.front().clone();
+				occupied = true;
 				queues[n_empty].q.pop();
 
 				// set time slice for cpu
@@ -126,7 +133,7 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 				gantt_p = make_tuple(running->pid, clock, 0);
 			}
 		}
-		
+
 		if(occupied) {
 			// cpu running...
 			if(running->burst == 1 && running->io > 0) {
@@ -161,17 +168,10 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 					// check if time quantum is up, if not, continue running
 					if(cpu == 0) {
 						occupied = false;
-						if(n_empty + 1 == n_queues) {
-							//add back to last queue
-							add_to_queue_n(*running, n_empty);
 
-							_DEBUG2(cout << "time quantum over pid: " << running->pid << " added to queue " << n_empty << endl);
-						} else {
-							//add to next queue
-							add_to_queue_n(*running, n_empty + 1);
-
-							_DEBUG2(cout << "time quantum over pid: " << running->pid << " added to queue " << n_empty + 1 << endl);
-						}
+						//add to next queue
+						add_to_queue_n(*running, running->queue + 1);
+						_DEBUG2(cout << "time quantum over pid: " << running->pid << " added to queue " << running->queue << endl);
 
 						// time quantum over - add to gantt list
 						get<2>(gantt_p) = clock;
@@ -181,7 +181,6 @@ vector<tuple<int, int, int>> Mfqs::schedule() {
 			}
 		}
 
-		n_empty = queues_empty();
 		clock++;
 	}
 
