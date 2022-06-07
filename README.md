@@ -1,5 +1,10 @@
 # scheduler
-CS 452 assignment 2 - process scheduler
+CS 452 Operating Systems - Assignment 2 - Process Scheduler Simulation
+
+This assignment simulates two different process scheduling algorithms: Realtime Scheduler, and Multilevel Feedback Queue Scheduler.
+Our code was stress tested with a file containing 1 million processes (1m_processes) and another file with 500k processes (500k). We optimized our code by removing processes from the end of our vector (O(1)) instead of from the front of the vector (O(n)).
+
+We also included a gannt chart that will work for smaller test files. Run GanntChart.java in the GanntChart directory after running a simulation.
 
 ## Usage
 Compile, clean up
@@ -23,9 +28,9 @@ Run
 - [x] Menu
 - [x] Multi level feedback queue
 - [x] Real time
-- [ ] Statistics
-- [ ] User entered processes
-- [ ] GUI? (menu, simulation, gannt charts)
+- [x] Statistics
+- [x] User entered processes
+- [x] Gannt chart
 
 
 
